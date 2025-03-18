@@ -47,7 +47,10 @@ $sqlCreateTable = "
         time VARCHAR(15) NOT NULL,
         cashier VARCHAR(150) NOT NULL,
         branch VARCHAR(15) NOT NULL,
-        discount_percentage VARCHAR(10) NOT NULL
+        discount_percentage VARCHAR(10) NOT NULL,
+        price varchar(10) NOT NULL,
+        discounted_price varchar(10) NOT NULL,
+        control_number varchar(30) NOT NULL
     )
 ";
 
@@ -60,14 +63,14 @@ error_log("SQL Create Table: " . $sqlCreateTable);
 
 if ($branch == "Dapitan") {
     $sqlTransferData = "
-        INSERT INTO `$archiveDb`.`$tableName` (ID, name, citizen, food, date, time, cashier, branch, discount_percentage)
-        SELECT ID, name, citizen, food, date, time, cashier, branch, discount_percentage FROM `$customersDb`.`dapitancustomers`
+        INSERT INTO `$archiveDb`.`$tableName` (ID, name, citizen, food, date, time, cashier, branch, discount_percentage, price, discounted_price, control_number)
+        SELECT ID, name, citizen, food, date, time, cashier, branch, discount_percentage, price, discounted_price, control_number FROM `$customersDb`.`dapitancustomers`
         WHERE branch = 'Dapitan'
     ";
 } else if ($branch == "Espana") {
     $sqlTransferData = "
-        INSERT INTO `$archiveDb`.`$tableName` (ID, name, citizen, food, date, time, cashier, branch, discount_percentage)
-        SELECT ID, name, citizen, food, date, time, cashier, branch, discount_percentage FROM `$customersDb`.`dapitancustomers`
+        INSERT INTO `$archiveDb`.`$tableName` (ID, name, citizen, food, date, time, cashier, branch, discount_percentage, price, discounted_price, control_number)
+        SELECT ID, name, citizen, food, date, time, cashier, branch, discount_percentage, price, discounted_price, control_number FROM `$customersDb`.`dapitancustomers`
         WHERE branch = 'Espana'
     ";
 }

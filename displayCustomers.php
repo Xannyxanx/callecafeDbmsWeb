@@ -20,7 +20,7 @@ $user_id = $_SESSION['user_id'];
 $user_name = $_SESSION['user_name'];
 $branch = $_SESSION['branch'];
 
-$sql = "SELECT ID, name, citizen, food, date, time, cashier, discount_percentage
+$sql = "SELECT ID, name, citizen, food, date, time, cashier, branch, discount_percentage, price, discounted_price, control_number
         FROM dapitancustomers
         WHERE branch = '$branch' 
         ORDER BY time DESC";

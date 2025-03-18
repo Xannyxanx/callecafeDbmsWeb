@@ -40,7 +40,7 @@ if ($tableExistsResult->num_rows == 0) {
     exit();
 }
 
-$sql = "SELECT ID, name, citizen, food, date, time, cashier, discount_percentage FROM `$date` WHERE branch = '$branch'";
+$sql = "SELECT ID, name, citizen, food, date, time, cashier, branch, discount_percentage, price, discounted_price, control_number FROM `$date` WHERE branch = '$branch'";
 
 if (!empty($query)) {
     $query = $conn->real_escape_string($query); 

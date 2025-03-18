@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,10 +17,11 @@
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgb(0,0,0);
-            background-color: rgba(0,0,0,0.4);
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
             padding-top: 60px;
         }
+
         .modal-content {
             background-color: #fefefe;
             margin: 5% auto;
@@ -27,12 +29,14 @@
             border: 1px solid #888;
             width: 80%;
         }
+
         .close {
             color: #aaa;
             float: right;
             font-size: 28px;
             font-weight: bold;
         }
+
         .close:hover,
         .close:focus {
             color: black;
@@ -41,6 +45,7 @@
         }
     </style>
 </head>
+
 <body>
     <div style="display: flex; height: 100vh;">
         <!-- SIDEBAR -->
@@ -67,20 +72,24 @@
                 <table border="1" width="100%">
                     <thead>
                         <tr>
-                            <th>ID NUMBER</th>
-                            <th>NAME</th>
-                            <th>CITIZEN TYPE</th>
-                            <th>FOOD</th>
-                            <th>SCAN DATE</th>
-                            <th>TIME</th>
-                            <th>CASHIER</th>
-                            <th>DISCOUNT %</th>
+                        <th style="width: 12.5%;">ID NUMBER</th>
+                        <th style="width: 12.5%;">NAME</th>
+                        <th style="width: 8%;">CITIZEN</th>
+                        <th style="width: 10%;">FOOD</th>
+                        <th style="width: 6%;">DATE</th>
+                        <th style="width: 6%;">TIME</th>
+                        <th style="width: 10%;">CASHIER</th>
+                        <th style="width: 7.5%;">BRANCH</th>
+                        <th style="width: 5%;">DISC%</th>
+                        <th style="width: 5%;">PRICE</th>
+                        <th style="width: 5%;">TOTAL</th>
+                        <th style="width: 12.5%;">CONTROL #</th>
                         </tr>
                     </thead>
                     <tbody id="customerTableBody">
 
                     </tbody>
-                </table>                
+                </table>
             </div>
             <!-- Archive Button -->
             <div style="display: flex; justify-content: center; margin-top: 20px;">
@@ -121,19 +130,23 @@
 
             function populateTable(data) {
                 let tableBody = document.getElementById("customerTableBody");
-                tableBody.innerHTML = ""; 
-            
+                tableBody.innerHTML = "";
+
                 data.forEach(customer => {
                     let row = `
                         <tr>
-                            <td>${customer.ID}</td>
-                            <td>${customer.name}</td>
-                            <td>${customer.citizen}</td>
-                            <td>${customer.food}</td>
-                            <td>${customer.date}</td>
-                            <td>${customer.time}</td>
-                            <td>${customer.cashier}</td>
-                            <td>${customer.discount_percentage}</td>
+                               <td>${customer.ID}</td>
+                                <td>${customer.name}</td>
+                                <td>${customer.citizen}</td>
+                                <td>${customer.food}</td>
+                                <td>${customer.date}</td>
+                                <td>${customer.time}</td>
+                                <td>${customer.cashier}</td>
+                                <td>${customer.branch}</td>
+                                <td>${customer.discount_percentage}</td>
+                                <td>${customer.price}</td>
+                                <td>${customer.discounted_price}</td>
+                                <td>${customer.control_number}</td>
                         </tr>
                     `;
                     tableBody.innerHTML += row;
@@ -148,11 +161,11 @@
                 modalImage.src = `data:image/jpeg;base64,${imageData}`;
                 modal.style.display = "block";
 
-                closeBtn.onclick = function() {
+                closeBtn.onclick = function () {
                     modal.style.display = "none";
                 }
 
-                window.onclick = function(event) {
+                window.onclick = function (event) {
                     if (event.target == modal) {
                         modal.style.display = "none";
                     }
@@ -172,15 +185,15 @@
                     customer.discount_percentage.toString().includes(searchValue)
                 );
 
-                populateTable(filteredData); 
+                populateTable(filteredData);
             });
 
-            document.getElementById("archiveBtn").addEventListener("click", function() {
+            document.getElementById("archiveBtn").addEventListener("click", function () {
                 if (confirm("Are you sure you want to archive today's data?")) {
                     var xhr = new XMLHttpRequest();
                     xhr.open("POST", "2.archiveBtn.php", true);
                     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                    xhr.onload = function() {
+                    xhr.onload = function () {
                         if (xhr.status === 200) {
                             alert("Data archived successfully!");
                         } else {
@@ -192,8 +205,8 @@
                 }
             });
 
-            document.getElementById("logoutButton").addEventListener("click", function() {
-                window.location.href = "logout.php"; 
+            document.getElementById("logoutButton").addEventListener("click", function () {
+                window.location.href = "logout.php";
             });
 
             window.history.pushState(null, "", window.location.href);
@@ -218,17 +231,17 @@
 
                 modal.style.display = "block";
 
-                closeBtn.onclick = function() {
+                closeBtn.onclick = function () {
                     modal.style.display = "none";
                 }
 
-                window.onclick = function(event) {
+                window.onclick = function (event) {
                     if (event.target == modal) {
                         modal.style.display = "none";
                     }
                 }
 
-                submitBtn.onclick = function() {
+                submitBtn.onclick = function () {
                     const password = document.getElementById("passwordInput").value;
                     if (password) {
                         fetch("verify_password.php", {
@@ -236,19 +249,20 @@
                             headers: { "Content-Type": "application/x-www-form-urlencoded" },
                             body: "password=" + encodeURIComponent(password)
                         })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                window.location.href = redirectUrl;
-                            } else {
-                                alert("Incorrect password. Please try again.");
-                            }
-                        })
-                        .catch(error => console.error("Error verifying password:", error));
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    window.location.href = redirectUrl;
+                                } else {
+                                    alert("Incorrect password. Please try again.");
+                                }
+                            })
+                            .catch(error => console.error("Error verifying password:", error));
                     }
                 }
             }
         });
     </script>
 </body>
+
 </html>

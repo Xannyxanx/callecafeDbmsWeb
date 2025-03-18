@@ -36,14 +36,18 @@
                 <h3>Archived Records</h3>
                 <table border="1" width="100%">
                     <tr>
-                        <th>ID NUMBER</th>
-                        <th>NAME</th>
-                        <th>CITIZEN TYPE</th>
-                        <th>FOOD</th>
-                        <th>SCAN DATE</th>
-                        <th>TIME</th>
-                        <th>CASHIER</th>
-                        <th>DISCOUNT%</th>
+                          <th style="width: 12.5%;">ID NUMBER</th>
+                        <th style="width: 12.5%;">NAME</th>
+                        <th style="width: 8%;">CITIZEN</th>
+                        <th style="width: 10%;">FOOD</th>
+                        <th style="width: 6%;">DATE</th>
+                        <th style="width: 6%;">TIME</th>
+                        <th style="width: 10%;">CASHIER</th>
+                        <th style="width: 7.5%;">BRANCH</th>
+                        <th style="width: 5%;">DISC%</th>
+                        <th style="width: 5%;">PRICE</th>
+                        <th style="width: 5%;">TOTAL</th>
+                        <th style="width: 12.5%;">CONTROL #</th>
                     </tr>
                     <tbody id="archiveTableBody">
                     </tbody>
@@ -96,7 +100,7 @@
                 fetch(url)
                     .then(response => response.json())
                     .then(data => {
-                        tableBody.innerHTML = ""; 
+                        tableBody.innerHTML = "";
 
                         if (data.length > 0) {
                             let filteredData = data.filter(record =>
@@ -107,7 +111,10 @@
                                 record.date.toLowerCase().includes(query) ||
                                 record.time.toLowerCase().includes(query) ||
                                 record.cashier.toLowerCase().includes(query) ||
-                                record.discount_percentage.toString().includes(query)
+                                record.discount_percentage.toString().includes(query) ||
+                                record.price.toString().includes(query) ||
+                                record.total.toString().includes(query) ||
+                                record.control_number.toString().includes(query)
                             );
 
                             if (filteredData.length > 0) {
@@ -121,16 +128,20 @@
                                             <td>${record.date}</td>
                                             <td>${record.time}</td>
                                             <td>${record.cashier}</td>
+                                            <td>${record.branch}</td>
                                             <td>${record.discount_percentage}</td>
+                                            <td>${record.price}</td>
+                                            <td>${record.discounted_price}</td>
+                                            <td>${record.control_number}</td>
                                         </tr>
                                     `;
                                     tableBody.innerHTML += row;
                                 });
                             } else {
-                                tableBody.innerHTML = "<tr><td colspan='9'>No records found for the selected date.</td></tr>";
+                                tableBody.innerHTML = "<tr><td colspan='12'>No records found for the selected date.</td></tr>";
                             }
                         } else {
-                            tableBody.innerHTML = "<tr><td colspan='9'>No records found for the selected date.</td></tr>";
+                            tableBody.innerHTML = "<tr><td colspan='12'>No records found for the selected date.</td></tr>";
                         }
                     })
                     .catch(error => console.error("Error fetching data:", error));
@@ -148,11 +159,11 @@
                 modalImage.src = `data:image/jpeg;base64,${imageData}`;
                 modal.style.display = "block";
 
-                closeBtn.onclick = function() {
+                closeBtn.onclick = function () {
                     modal.style.display = "none";
                 }
 
-                window.onclick = function(event) {
+                window.onclick = function (event) {
                     if (event.target == modal) {
                         modal.style.display = "none";
                     }
@@ -163,7 +174,7 @@
                 const date = dateInput.value.trim();
                 const query = searchInput.value.trim();
                 let url = `3.DownloadExcel.php?date=${date}&query=${query}`;
-                window.location.href = url; 
+                window.location.href = url;
             });
 
             window.history.pushState(null, "", window.location.href);
@@ -171,8 +182,8 @@
                 window.history.pushState(null, "", window.location.href);
             };
 
-            document.getElementById("logoutButton").addEventListener("click", function() {
-                window.location.href = "logout.php"; 
+            document.getElementById("logoutButton").addEventListener("click", function () {
+                window.location.href = "logout.php";
             });
 
             document.getElementById("accountManagementLink").addEventListener("click", function (event) {
@@ -192,17 +203,17 @@
 
                 modal.style.display = "block";
 
-                closeBtn.onclick = function() {
+                closeBtn.onclick = function () {
                     modal.style.display = "none";
                 }
 
-                window.onclick = function(event) {
+                window.onclick = function (event) {
                     if (event.target == modal) {
                         modal.style.display = "none";
                     }
                 }
 
-                submitBtn.onclick = function() {
+                submitBtn.onclick = function () {
                     const password = document.getElementById("passwordInput").value;
                     if (password) {
                         fetch("verify_password.php", {
@@ -210,15 +221,15 @@
                             headers: { "Content-Type": "application/x-www-form-urlencoded" },
                             body: "password=" + encodeURIComponent(password)
                         })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                window.location.href = redirectUrl;
-                            } else {
-                                alert("Incorrect password. Please try again.");
-                            }
-                        })
-                        .catch(error => console.error("Error verifying password:", error));
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    window.location.href = redirectUrl;
+                                } else {
+                                    alert("Incorrect password. Please try again.");
+                                }
+                            })
+                            .catch(error => console.error("Error verifying password:", error));
                     }
                 }
             }
