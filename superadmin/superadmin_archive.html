@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Calle Cafe - Super Admin Archives</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="icon" href="images/browserlogo.png" type="browser logo">
+</head>
+
+<body>
+    <div class="container" style="display: flex; height: 100vh;">
+        <!-- SIDEBAR -->
+        <nav class="sidebar">
+            <h2>Calle Cafe</h2>
+            <ul>
+                <li><a href="superadmin_home.html">HOME</a></li>
+                <li><a href="superadmin_discounted_customers.html">DISCOUNTED CUSTOMERS</a></li>
+                <li><a href="superadmin_archive.html">ARCHIVE</a></li>
+                <li><a href="#" id="accountManagementLink">ACCOUNT MANAGEMENT</a></li>
+                <li><a href="#" id="userAccountSettingsLink">USER ACCOUNT SETTINGS</a></li>
+                <li><a id="logoutButton">LOGOUT</a></li>
+            </ul>
+        </nav>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content" style="width: 80%; padding: 15px;">
+            <h2>Archives</h2>
+            <!-- FILTER FORM -->
+            <form action="#" method="get" class="archive-form" id="archiveForm">
+                <input type="date" id="date" name="date" class="date-input">
+                <input type="search" id="search" name="query" placeholder="Search..." required>
+                <!-- Branch Selection Dropdown -->
+                <label for="branchSelect">Select Branch:</label>
+                <select id="branchSelect">
+                    <option value="all">All</option>
+                    <option value="dapitan">Dapitan</option>
+                    <option value="espana">Espana</option>
+                </select>
+            </form>
+
+            <!-- TABLE -->
+            <div>
+                <h3>Archived Records</h3>
+                <table border="1" width="100%">
+                    <tr>
+                        <th>ID NUMBER</th>
+                        <th>NAME</th>
+                        <th>CITIZEN TYPE</th>
+                        <th>FOOD</th>
+                        <th>SCAN DATE</th>
+                        <th>TIME</th>
+                        <th>CASHIER</th>
+                        <th>DISCOUNT%</th>
+                        <th>PRICE</th>
+                        <th>DISCOUNTED PRICE</th>
+                        <th>CONTROL NUMBER</th>
+                    </tr>
+                    <tbody id="archiveTableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- EXCEL BUTTON -->
+            <div style="display: flex; justify-content: center; margin-top: 20px;">
+                <a href="#" id="exportBtn" class="download-btn" style="display: flex; align-items: center;">
+                    <img src="images/excel.png" alt="excelIcon" class="icon" style="margin-right: 5px;" />
+                    Download Excel
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Enter Password</h2>
+            <input type="password" id="passwordInput" placeholder="Enter your password">
+            <button id="passwordSubmit">Submit</button>
+        </div>
+    </div>
+
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img id="modalImage" src="" alt="ID Image" style="width: 100%;">
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById("date");
+            const searchInput = document.getElementById("search");
+            const branchSelect = document.getElementById("branchSelect");
+            const tableBody = document.getElementById("archiveTableBody");
+            dateInput.value = today;
+
+            // Function to fetch data based on date, search query, and branch
+            function fetchData() {
+                const date = dateInput.value.trim(); // The selected date (yyyy-mm-dd)
+                const query = searchInput.value.trim().toLowerCase(); // The search input value
+                const branch = branchSelect.value; // The selected branch
+
+                if (!date) return; // Ensure a valid date is selected
+
+                let url = `3.displayArchive.php?date=${date}&branch=${branch}`;
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        tableBody.innerHTML = ""; 
+
+                        if (data.length > 0) {
+                            let filteredData = data.filter(record =>
+                                record.ID.toString().includes(query) ||
+                                record.name.toLowerCase().includes(query) ||
+                                record.citizen.toLowerCase().includes(query) ||
+                                record.food.toLowerCase().includes(query) ||
+                                record.date.toLowerCase().includes(query) ||
+                                record.time.toLowerCase().includes(query) ||
+                                record.cashier.toLowerCase().includes(query) ||
+                                record.discount_percentage.toString().includes(query) ||
+                                record.price.toString().includes(query) ||
+                                record.discounted_price.toString().includes(query) ||
+                                record.control_number.toString().includes(query)
+                            );
+
+                            if (filteredData.length > 0) {
+                                filteredData.forEach(record => {
+                                    let row = `
+                                        <tr>
+                                            <td>${record.ID}</td>
+                                            <td>${record.name}</td>
+                                            <td>${record.citizen}</td>
+                                            <td>${record.food}</td>
+                                            <td>${record.date}</td>
+                                            <td>${record.time}</td>
+                                            <td>${record.cashier}</td>
+                                            <td>${record.discount_percentage}</td>
+                                            <td>${record.price}</td>
+                                            <td>${record.discounted_price}</td>
+                                            <td>${record.control_number}</td>
+                                        </tr>
+                                    `;
+                                    tableBody.innerHTML += row;
+                                });
+                            } else {
+                                tableBody.innerHTML = "<tr><td colspan='11'>No records found for the selected date.</td></tr>";
+                            }
+                        } else {
+                            tableBody.innerHTML = "<tr><td colspan='11'>No records found for the selected date.</td></tr>";
+                        }
+                    })
+                    .catch(error => console.error("Error fetching data:", error));
+            }
+
+            dateInput.addEventListener("change", fetchData);
+            searchInput.addEventListener("input", fetchData);
+            branchSelect.addEventListener("change", fetchData);
+            fetchData();
+
+            function showImageModal(imageData) {
+                const modal = document.getElementById("imageModal");
+                const modalImage = document.getElementById("modalImage");
+                const closeBtn = document.querySelector("#imageModal .close");
+
+                modalImage.src = `data:image/jpeg;base64,${imageData}`;
+                modal.style.display = "block";
+
+                closeBtn.onclick = function() {
+                    modal.style.display = "none";
+                }
+
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                }
+            }
+
+            document.getElementById("exportBtn").addEventListener("click", function () {
+                const date = dateInput.value.trim();
+                const query = searchInput.value.trim();
+                const branch = branchSelect.value;
+                let url = `3.DownloadExcel.php?date=${date}&query=${query}&branch=${branch}`;
+                window.location.href = url; 
+            });
+
+            window.history.pushState(null, "", window.location.href);
+            window.onpopstate = function () {
+                window.history.pushState(null, "", window.location.href);
+            };
+
+            document.getElementById("logoutButton").addEventListener("click", function() {
+                window.location.href = "logout.php"; 
+            });
+
+            document.getElementById("accountManagementLink").addEventListener("click", function (event) {
+                event.preventDefault();
+                showPasswordModal("4.1account_management.html");
+            });
+
+            document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
+                event.preventDefault();
+                showPasswordModal("5.account_settings.html");
+            });
+
+            function showPasswordModal(redirectUrl) {
+                const modal = document.getElementById("passwordModal");
+                const closeBtn = document.querySelector(".close");
+                const submitBtn = document.getElementById("passwordSubmit");
+
+                modal.style.display = "block";
+
+                closeBtn.onclick = function() {
+                    modal.style.display = "none";
+                }
+
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                }
+
+                submitBtn.onclick = function() {
+                    const password = document.getElementById("passwordInput").value;
+                    if (password) {
+                        fetch("verify_password.php", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                            body: "password=" + encodeURIComponent(password)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.location.href = redirectUrl;
+                            } else {
+                                alert("Incorrect password. Please try again.");
+                            }
+                        })
+                        .catch(error => console.error("Error verifying password:", error));
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

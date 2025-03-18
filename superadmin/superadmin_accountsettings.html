@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Calle Cafe - Superadmin Settings</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="icon" href="images/browserlogo.png" type="image/png">
+    <style>
+        /* Additional styles for branch management */
+        .branch-management {
+            margin: 20px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .branch-box {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+
+        .branch-box h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .branch-box input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .branch-box button {
+            background: #4CAF50;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .branch-box button:hover {
+            background: #45a049;
+        }
+
+        .global-discount {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+
+        .global-discount h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .global-discount input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .global-discount button {
+            background: #4CAF50;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .global-discount button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="display: flex; height: 100vh;">
+        <!-- SIDEBAR -->
+        <nav class="sidebar">
+            <h2>Calle Cafe</h2>
+            <ul>
+                <li><a href="1.home.html">HOME</a></li>
+                <li><a href="2.discounted_customers.html">DISCOUNTED CUSTOMERS</a></li>
+                <li><a href="3.archive.html">ARCHIVE</a></li>
+                <li><a href="#" id="accountManagementLink">ACCOUNT MANAGEMENT</a></li>
+                <li><a href="#" id="userAccountSettingsLink">USER ACCOUNT SETTINGS</a></li>
+                <li><a id="logoutButton">LOGOUT</a></li>
+            </ul>
+        </nav>
+
+        <!-- MAIN CONTENT -->
+        <main class="account-settings-container">
+            <h2 style="margin: 20px;">Superadmin Settings</h2>
+
+            <!-- ACCOUNT SETTINGS -->
+            <div class="account-settings-user-info">
+                <h3 style="text-align: center;">Current Registered User</h3>
+                <p><strong>Name:</strong> <span id="currentName"></span></p>
+                <p><strong>Email:</strong> <span id="currentEmail"></span></p>
+            </div>
+
+            <div class="account-settings-user-info" style="text-align: center;">
+                <h3 style="text-align: center;">Update User Information</h3>
+                <form class="account-settings-form" onsubmit="event.preventDefault(); updateUser();">
+                    <input type="text" id="name" placeholder="Enter New complete name">
+                    <input type="email" id="email" placeholder="Enter New email address">
+                    <input type="password" id="password" placeholder="Enter New Password">
+                    <input type="password" id="confirmPassword" placeholder="Confirm new password">
+                    <button type="submit">Update</button>
+                </form>
+            </div>
+
+            <!-- BRANCH MANAGEMENT -->
+            <div class="branch-management">
+                <h3>Branch Management</h3>
+
+                <!-- Dapitan Branch -->
+                <div class="branch-box" id="dapitanBranch">
+                    <h4>Dapitan Branch</h4>
+                    <input type="text" id="dapitanName" placeholder="Branch Name">
+                    <input type="email" id="dapitanEmail" placeholder="Admin Email">
+                    <input type="password" id="dapitanPassword" placeholder="Admin Password">
+                    <button onclick="saveBranch('dapitan')">Save Changes</button>
+                </div>
+
+                <!-- Espana Branch -->
+                <div class="branch-box" id="espanaBranch">
+                    <h4>Espana Branch</h4>
+                    <input type="text" id="espanaName" placeholder="Branch Name">
+                    <input type="email" id="espanaEmail" placeholder="Admin Email">
+                    <input type="password" id="espanaPassword" placeholder="Admin Password">
+                    <button onclick="saveBranch('espana')">Save Changes</button>
+                </div>
+
+                <!-- Global Discount -->
+                <div class="global-discount">
+                    <h4>Global Discount Percentage</h4>
+                    <input type="number" id="globalDiscount" placeholder="Discount Percentage" min="0" max="100">
+                    <button onclick="saveGlobalDiscount()">Save Discount</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Load current user data
+            fetch("5.users.php")
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("currentName").innerText = data.name;
+                    document.getElementById("currentEmail").innerText = data.email;
+                });
+
+            // Load branch data
+            fetch("5.get_branches.php")
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("dapitanName").value = data.dapitan.name;
+                    document.getElementById("dapitanEmail").value = data.dapitan.email;
+                    document.getElementById("espanaName").value = data.espana.name;
+                    document.getElementById("espanaEmail").value = data.espana.email;
+                    document.getElementById("globalDiscount").value = data.global_discount;
+                });
+        });
+
+        // Save branch changes
+        function saveBranch(branch) {
+            const data = {
+                name: document.getElementById(`${branch}Name`).value,
+                email: document.getElementById(`${branch}Email`).value,
+                password: document.getElementById(`${branch}Password`).value
+            };
+
+            fetch(`5.update_branch.php?branch=${branch}`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            });
+        }
+
+        // Save global discount
+        function saveGlobalDiscount() {
+            const discount = document.getElementById("globalDiscount").value;
+
+            fetch("5.update_discount.php", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ discount })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            });
+        }
+
+        // Existing updateUser function
+        function updateUser() {
+            const userData = {
+                name: document.getElementById("name").value,
+                email: document.getElementById("email").value,
+                password: document.getElementById("password").value,
+                confirmPassword: document.getElementById("confirmPassword").value
+            };
+
+            fetch("5.update_user.php", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(userData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                location.reload();
+            });
+        }
+
+        // Logout
+        document.getElementById("logoutButton").addEventListener("click", function() {
+            window.location.href = "logout.php";
+        });
+    </script>
+</body>
+</html>

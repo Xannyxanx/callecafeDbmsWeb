@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Calle Cafe - Account Settings</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="icon" href="images/browserlogo.png" type="browser logo">
+</head>
+
+<body>
+    <div style="display: flex; height: 100vh;">
+        <!-- SIDEBAR -->
+        <nav class="sidebar">
+            <h2>Calle Cafe</h2>
+            <ul>
+                <li><a href="1.home.html">HOME</a></li>
+                <li><a href="2.discounted_customers.html">DISCOUNTED CUSTOMERS</a></li>
+                <li><a href="3.archive.html">ARCHIVE</a></li>
+                <li><a href="#" id="accountManagementLink">ACCOUNT MANAGEMENT</a></li>
+                <li><a href="#" id="userAccountSettingsLink">USER ACCOUNT SETTINGS</a></li>
+                <li><a id="logoutButton">LOGOUT</a></li>
+            </ul>
+        </nav>
+        <!-- MAIN CONTENT -->
+        <main class="account-settings-container">
+            <h2>User Account Settings</h2>
+
+            <!-- CURRENT REGISTERED USER -->
+            <div class="account-settings-user-info">
+                <h3 style="text-align: center;">Current Registered User</h3>
+                <p><strong>Name:</strong> <span id="currentName"></span></p>
+                <p><strong>Email:</strong> <span id="currentEmail"></span></p>
+            </div>
+
+            <!-- UPDATE USER FORM -->
+            <div class="account-settings-user-info" style="text-align: center;">
+                <h3 style="text-align: center;">Update User Information</h3>
+                <form class="account-settings-form" onsubmit="event.preventDefault(); updateUser();">
+
+                    <input type="text" id="name" placeholder="Enter New complete name">
+                    <input type="email" id="email" placeholder="Enter New email address">
+                    <input type="password" id="password" placeholder="Enter New Password">
+                    <input type="password" id="confirmPassword" placeholder="Confirm new password">
+                    <button type="submit">Update</button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Enter Password</h2>
+            <input type="password" id="passwordInput" placeholder="Enter your password">
+            <button id="passwordSubmit">Submit</button>
+        </div>
+    </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch("5.users.php")
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error(data.error);
+                    return;
+                }
+    
+                document.getElementById("currentName").innerText = data.name;
+                document.getElementById("currentEmail").innerText = data.email;
+                document.getElementById("currentPassword").innerText = data.password; 
+            })
+            .catch(error => console.error("Error fetching user data:", error));
+    });
+   
+   
+    function updateUser() {
+    var name = document.getElementById("name").value.trim();
+    var email = document.getElementById("email").value.trim();
+    var password = document.getElementById("password").value.trim();
+    var confirmPassword = document.getElementById("confirmPassword").value.trim();
+
+
+    var userData = {};
+    if (name) userData.name = name;
+    if (email) userData.email = email;
+    if (password) userData.password = password;
+    if (confirmPassword) userData.confirmPassword = confirmPassword;
+
+
+    if (Object.keys(userData).length === 0) {
+        alert("Please fill in at least one field to update.");
+        return;
+    }
+
+    fetch("5.update_user.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(userData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+        } else {
+            alert(data.success);
+            location.reload(); 
+        }
+    })
+    .catch(error => console.error("Error updating user:", error));
+}
+
+    document.getElementById("logoutButton").addEventListener("click", function() {
+        window.location.href = "logout.php"; 
+    });
+
+    window.history.pushState(null, "", window.location.href);
+    window.onpopstate = function () {
+        window.history.pushState(null, "", window.location.href);
+    };
+
+            document.getElementById("accountManagementLink").addEventListener("click", function (event) {
+            event.preventDefault();
+            showPasswordModal("4.1account_management.html");
+        });
+
+        document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
+            event.preventDefault();
+            showPasswordModal("5.account_settings.html");
+        });
+
+        function showPasswordModal(redirectUrl) {
+            const modal = document.getElementById("passwordModal");
+            const closeBtn = document.querySelector(".close");
+            const submitBtn = document.getElementById("passwordSubmit");
+
+            modal.style.display = "block";
+
+            closeBtn.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+
+            submitBtn.onclick = function() {
+                const password = document.getElementById("passwordInput").value;
+                if (password) {
+                    fetch("verify_password.php", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: "password=" + encodeURIComponent(password)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = redirectUrl;
+                        } else {
+                            alert("Incorrect password. Please try again.");
+                        }
+                    })
+                    .catch(error => console.error("Error verifying password:", error));
+                }
+            }
+        }
+     
+    </script>
+    </body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calle Cafe - Discounted Customers</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="icon" href="images/browserlogo.png" type="browser logo">
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div style="display: flex; height: 100vh;">
+        <!-- SIDEBAR -->
+        <nav class="sidebar">
+            <h2>Calle Cafe</h2>
+            <ul>
+                <li><a href="1.home.html">HOME</a></li>
+                <li><a href="2.discounted_customers.html">DISCOUNTED CUSTOMERS</a></li>
+                <li><a href="3.archive.html">ARCHIVE</a></li>
+                <li><a href="#" id="accountManagementLink">ACCOUNT MANAGEMENT</a></li>
+                <li><a href="#" id="userAccountSettingsLink">USER ACCOUNT SETTINGS</a></li>
+                <li><a id="logoutButton">LOGOUT</a></li>
+            </ul>
+        </nav>
+        <!-- MAIN CONTENT -->
+        <main class="main-content" style="width: 80%; padding: 15px;">
+            <h2>Discounted Customers</h2>
+            <form class="archive-form" action="#" method="get"> <!--Database-->
+                <input type="search" id="search" name="query" placeholder="Search..." required>
+            </form>
+            <!-- TABLE-->
+            <div>
+                <h3>Customers List</h3>
+                <table border="1" width="100%">
+                    <thead>
+                        <tr>
+                            <th>ID NUMBER</th>
+                            <th>NAME</th>
+                            <th>CITIZEN TYPE</th>
+                            <th>FOOD</th>
+                            <th>SCAN DATE</th>
+                            <th>TIME</th>
+                            <th>CASHIER</th>
+                            <th>DISCOUNT %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customerTableBody">
+
+                    </tbody>
+                </table>                
+            </div>
+            <!-- Archive Button -->
+            <div style="display: flex; justify-content: center; margin-top: 20px;">
+                <button id="archiveBtn" class="archive-btn" style="display: flex; align-items: center; ">
+                    Archive
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Enter Password</h2>
+            <input type="password" id="passwordInput" placeholder="Enter your password">
+            <button id="passwordSubmit">Submit</button>
+        </div>
+    </div>
+
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img id="modalImage" src="" alt="ID Image" style="width: 100%;">
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let customersData = []; // Store fetched data for search
+
+            fetch("displayCustomers.php")
+                .then(response => response.json())
+                .then(data => {
+                    customersData = data; // Store data globally
+                    populateTable(customersData);
+                })
+                .catch(error => console.error("Error fetching customer data:", error));
+
+            function populateTable(data) {
+                let tableBody = document.getElementById("customerTableBody");
+                tableBody.innerHTML = ""; 
+            
+                data.forEach(customer => {
+                    let row = `
+                        <tr>
+                            <td>${customer.ID}</td>
+                            <td>${customer.name}</td>
+                            <td>${customer.citizen}</td>
+                            <td>${customer.food}</td>
+                            <td>${customer.date}</td>
+                            <td>${customer.time}</td>
+                            <td>${customer.cashier}</td>
+                            <td>${customer.discount_percentage}</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+            }
+
+            function showImageModal(imageData) {
+                const modal = document.getElementById("imageModal");
+                const modalImage = document.getElementById("modalImage");
+                const closeBtn = document.querySelector("#imageModal .close");
+
+                modalImage.src = `data:image/jpeg;base64,${imageData}`;
+                modal.style.display = "block";
+
+                closeBtn.onclick = function() {
+                    modal.style.display = "none";
+                }
+
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                }
+            }
+            // Search Functionality
+            document.getElementById("search").addEventListener("input", function () {
+                let searchValue = this.value.toLowerCase();
+                let filteredData = customersData.filter(customer =>
+                    customer.ID.toString().includes(searchValue) ||
+                    customer.name.toLowerCase().includes(searchValue) ||
+                    customer.citizen.toLowerCase().includes(searchValue) ||
+                    customer.food.toLowerCase().includes(searchValue) ||
+                    customer.date.toLowerCase().includes(searchValue) ||
+                    customer.time.toLowerCase().includes(searchValue) ||
+                    customer.cashier.toLowerCase().includes(searchValue) ||
+                    customer.discount_percentage.toString().includes(searchValue)
+                );
+
+                populateTable(filteredData); 
+            });
+
+            document.getElementById("archiveBtn").addEventListener("click", function() {
+                if (confirm("Are you sure you want to archive today's data?")) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("POST", "2.archiveBtn.php", true);
+                    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                    xhr.onload = function() {
+                        if (xhr.status === 200) {
+                            alert("Data archived successfully!");
+                        } else {
+                            alert("Error archiving data.");
+                        }
+                    };
+                    xhr.send();
+                    location.reload();
+                }
+            });
+
+            document.getElementById("logoutButton").addEventListener("click", function() {
+                window.location.href = "logout.php"; 
+            });
+
+            window.history.pushState(null, "", window.location.href);
+            window.onpopstate = function () {
+                window.history.pushState(null, "", window.location.href);
+            };
+
+            document.getElementById("accountManagementLink").addEventListener("click", function (event) {
+                event.preventDefault();
+                showPasswordModal("4.1account_management.html");
+            });
+
+            document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
+                event.preventDefault();
+                showPasswordModal("5.account_settings.html");
+            });
+
+            function showPasswordModal(redirectUrl) {
+                const modal = document.getElementById("passwordModal");
+                const closeBtn = document.querySelector(".close");
+                const submitBtn = document.getElementById("passwordSubmit");
+
+                modal.style.display = "block";
+
+                closeBtn.onclick = function() {
+                    modal.style.display = "none";
+                }
+
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                }
+
+                submitBtn.onclick = function() {
+                    const password = document.getElementById("passwordInput").value;
+                    if (password) {
+                        fetch("verify_password.php", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                            body: "password=" + encodeURIComponent(password)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.location.href = redirectUrl;
+                            } else {
+                                alert("Incorrect password. Please try again.");
+                            }
+                        })
+                        .catch(error => console.error("Error verifying password:", error));
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

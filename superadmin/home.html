@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Calle Cafe - Super Admin Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="icon" href="images/browserlogo.png" type="browser logo">
+</head>
+
+<body>
+    <div class="container" style="display: flex; height: 100vh;">
+        <!-- SIDEBAR -->
+        <nav class="sidebar">
+            <h2>Calle Cafe</h2>
+            <ul>
+                <li><a href="superadmin_home.html">HOME</a></li>
+                <li><a href="superadmin_discounted_customers.html">DISCOUNTED CUSTOMERS</a></li>
+                <li><a href="superadmin_archive.html">ARCHIVE</a></li>
+                <li><a href="#" id="accountManagementLink">ACCOUNT MANAGEMENT</a></li>
+                <li><a href="#" id="userAccountSettingsLink">USER ACCOUNT SETTINGS</a></li>
+                <li><a id="logoutButton">LOGOUT</a></li>
+            </ul>
+        </nav>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content" style="width: 80%; padding: 15px;">
+            <h2>Super Admin Dashboard</h2>
+
+            <!-- Branch Selection Dropdown -->
+            <div>
+                <label for="branchSelect">Select Branch:</label>
+                <select id="branchSelect">
+                    <option value="all">All</option>
+                    <option value="dapitan">Dapitan</option>
+                    <option value="espana">Espana</option>
+                </select>
+            </div>
+
+            <!-- Time Period Selection Dropdown -->
+            <div>
+                <label for="timePeriodSelect">Select Time Period:</label>
+                <select id="timePeriodSelect">
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                </select>
+            </div>
+
+            <!-- GRAPHS AND CHARTS -->
+            <div>
+                <h3></h3>
+                <div class="live-counters">
+                    <div class="counter-box">
+                        <h3>Total Discounted Customers</h3>
+                        <p id="totalCustomers">0</p>
+                    </div>
+                    <div class="counter-box">
+                        <h3>Senior Citizen</h3>
+                        <p id="totalSenior">0</p>
+                    </div>
+                    <div class="counter-box">
+                        <h3>PWD</h3>
+                        <p id="totalPWD">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <div>
+                <h3>Recent Customers (last 24 hours)</h3>
+                <table>
+                    <tr>
+                        <th>ID NUMBER</th>
+                        <th>NAME</th>
+                        <th>CITIZEN</th>
+                        <th>FOOD</th>
+                        <th>DATE</th>
+                        <th>TIME</th>
+                        <th>CASHIER</th>
+                        <th>DISCOUNT%</th>
+                        <th>PRICE</th>
+                        <th>DISCOUNTED PRICE</th>
+                        <th>CONTROL NUMBER</th>
+                        <th>ID IMAGE</th>
+                    </tr>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Enter Password</h2>
+            <input class="modal-password-input" type="password" id="passwordInput" placeholder="Enter your password">
+            <button class="modal-password-btn" id="passwordSubmit">Submit</button>
+        </div>
+    </div>
+
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img id="modalImage" src="" alt="ID Image" style="width: 100%;">
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("1.recent_customers.php")
+                .then(response => response.json())
+                .then(data => {
+                    let tableBody = document.getElementById("tableBody");
+                    let totalCustomers = document.getElementById("totalCustomers");
+                    let totalSenior = document.getElementById("totalSenior");
+                    let totalPWD = document.getElementById("totalPWD");
+
+                    tableBody.innerHTML = ""; 
+
+                    let rows = "";
+                    data.customers.forEach(customer => {
+                        rows += `
+                            <tr>
+                                <td>${customer.ID}</td>
+                                <td>${customer.name}</td>
+                                <td>${customer.citizen}</td>
+                                <td>${customer.food}</td>
+                                <td>${customer.date}</td>
+                                <td>${customer.time}</td>
+                                <td>${customer.cashier}</td>
+                                <td>${customer.discount_percentage}</td>
+                                <td>${customer.price}</td>
+                                <td>${customer.discounted_price}</td>
+                                <td>${customer.control_number}</td>
+                                <td><a href="#" class="image-link" data-image="${customer.customer_ID}">View Image</a></td>
+                            </tr>
+                        `;
+                    });
+                    tableBody.innerHTML = rows;
+
+                    totalCustomers.textContent = data.totalDiscounted;
+                    totalSenior.textContent = data.totalSenior;
+                    totalPWD.textContent = data.totalPWD;
+
+                    // Add event listeners to image links
+                    document.querySelectorAll(".image-link").forEach(link => {
+                        link.addEventListener("click", function(event) {
+                            event.preventDefault();
+                            const imageData = this.getAttribute("data-image");
+                            showImageModal(imageData);
+                        });
+                    });
+                })
+                .catch(error => console.error("Error fetching customer data:", error));
+        });
+
+        function showImageModal(imageData) {
+            const modal = document.getElementById("imageModal");
+            const modalImage = document.getElementById("modalImage");
+            const closeBtn = document.querySelector("#imageModal .close");
+
+            modalImage.src = `data:image/jpeg;base64,${imageData}`;
+            modal.style.display = "block";
+
+            closeBtn.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        }
+
+        document.getElementById("logoutButton").addEventListener("click", function() {
+            window.location.href = "logout.php";
+        });
+
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () {
+            history.go(1); 
+        };
+
+        document.getElementById("accountManagementLink").addEventListener("click", function (event) {
+            event.preventDefault();
+            showPasswordModal("4.1account_management.html");
+        });
+
+        document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
+            event.preventDefault();
+            showPasswordModal("5.account_settings.html");
+        });
+
+        function showPasswordModal(redirectUrl) {
+            const modal = document.getElementById("passwordModal");
+            const closeBtn = document.querySelector(".close");
+            const submitBtn = document.getElementById("passwordSubmit");
+
+            modal.style.display = "block";
+
+            closeBtn.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+
+            submitBtn.onclick = function() {
+                const password = document.getElementById("passwordInput").value;
+                if (password) {
+                    fetch("verify_password.php", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: "password=" + encodeURIComponent(password)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = redirectUrl;
+                        } else {
+                            alert("Incorrect password. Please try again.");
+                        }
+                    })
+                    .catch(error => console.error("Error verifying password:", error));
+                }
+            }
+        }
+    </script>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
