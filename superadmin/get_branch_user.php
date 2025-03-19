@@ -1,4 +1,5 @@
 <?php
+session_start();
 header("Content-Type: application/json");
 
 $servername = "localhost";
@@ -13,8 +14,8 @@ if ($conn->connect_error) {
     exit();
 }
 
-// Fetch all available branches
-$sqlBranches = "SELECT DISTINCT branch FROM users WHERE branch IS NOT NULL AND branch != ''";
+// Get all branches except SUPERADMIN
+$sqlBranches = "SELECT DISTINCT branch FROM users WHERE branch IS NOT NULL AND branch != '' AND LOWER(branch) != 'superadmin'";
 $resultBranches = $conn->query($sqlBranches);
 
 $branches = [];
@@ -24,26 +25,47 @@ if ($resultBranches->num_rows > 0) {
     }
 }
 
-// Fetch user details for the selected branch
+// Check if branch parameter is provided
 $branch = isset($_GET['branch']) ? strtolower(trim($_GET['branch'])) : '';
 
 if (empty($branch)) {
-    // Return all branches if no branch is selected
-    echo json_encode(["success" => true, "branches" => $branches]);
+    // Return only branches if no branch is selected, without pre-selecting any branch
+    echo json_encode([
+        "success" => true, 
+        "branches" => $branches,
+        "selectedBranch" => "" // Explicitly set selected branch to empty
+    ]);
     exit();
 }
 
-$sql = "SELECT name, email FROM users WHERE LOWER(branch) = ?";
+// Fetch all users in the selected branch
+$sql = "SELECT id, name, email FROM users WHERE LOWER(branch) = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $branch);
 $stmt->execute();
 $result = $stmt->get_result();
 
+$users = [];
 if ($result->num_rows > 0) {
-    $user = $result->fetch_assoc();
-    echo json_encode(["success" => true, "user" => $user, "branches" => $branches]);
+    while ($row = $result->fetch_assoc()) {
+        $users[] = $row; // Add each user to the users array
+    }
+}
+
+if (!empty($users)) {
+    echo json_encode([
+        "success" => true,
+        "users" => $users, // Return all users
+        "branches" => $branches,
+        "selectedBranch" => $branch
+    ]);
 } else {
-    echo json_encode(["success" => false, "error" => "No user found for the selected branch.", "branches" => $branches]);
+    echo json_encode([
+        "success" => false,
+        "error" => "No users found for the selected branch.",
+        "branches" => $branches,
+        "selectedBranch" => $branch
+    ]);
 }
 
 $stmt->close();

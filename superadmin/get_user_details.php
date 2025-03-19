@@ -20,7 +20,7 @@ if (empty($userId)) {
 }
 
 // Fetch user details
-$sql = "SELECT name, email FROM users WHERE id = ?";
+$sql = "SELECT name, email, branch FROM users WHERE id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $userId);
 $stmt->execute();
