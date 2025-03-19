@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Calle Cafe - Super Admin Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="icon" href="images/browserlogo.png" type="browser logo">
+</head>
+
+<body>
+    <div>
+        <!-- SIDEBAR -->
+        <nav class="sidebar">
+            <h2>Calle Cafe</h2>
+            <ul>
+                <li><a href="superadmin_home.html">HOME</a></li>
+                <li><a href="superadmin_discountedCustomers.html">DISCOUNTED CUSTOMERS</a></li>
+                <li><a href="superadmin_archive.html">ARCHIVE</a></li>
+                <li><a href="#" id="accountManagementLink">ACCOUNT MANAGEMENT</a></li>
+                <li><a href="#" id="userAccountSettingsLink">SUPER ADMIN SETTINGS</a></li>
+                <li><a href="superadmin_branchmgmt.html">BRANCH MANAGEMENT</a></li>
+                <li><a id="logoutButton">LOGOUT</a></li>
+            </ul>
+        </nav>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <h2>Super Admin Dashboard</h2>
+
+            <div class="dropdown">
+                <select id="branchSelect">
+                    <option value="all">All</option>
+                </select>
+            </div>
+
+
+            <!-- GRAPHS AND CHARTS -->
+            <div>
+                <h3></h3>
+                <div class="live-counters" style=" width: 100%;">
+
+                    <!-- Live Counters Row -->
+                    <div style="display: flex; justify-content: space-between; width: 80%; padding-bottom: 30px;">
+                        <div class="counter-box">
+                            <h3>Total Discounted Customers</h3>
+                            <p id="totalCustomers">0</p>
+                        </div>
+                        <div class="counter-box">
+                            <h3>Senior Citizen</h3>
+                            <p id="totalSenior">0</p>
+                        </div>
+                        <div class="counter-box">
+                            <h3>PWD</h3>
+                            <p id="totalPWD">0</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <div>
+                <h3>Graphs and Charts</h3>
+                <div class="charts-container">
+                    <!-- Pie Chart -->
+                    <div class="chart-box">
+                        <canvas id="myPieChart"></canvas>
+                        <div class="dropdown">
+                            <select id="pieChartPeriod">
+                                <option value="week">Week</option>
+                                <option value="month">Month</option>
+                                <option value="year">Year</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Bar Chart -->
+                    <div class="chart-box">
+
+                        <canvas id="myBarChart"></canvas>
+                        <div class="dropdown">
+                            <select id="barChartPeriod">
+                                <option value="week">Week</option>
+                                <option value="month">Month</option>
+                                <option value="year">Year</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- TABLE -->
+            <div>
+                <h3 style="display: inline-block; ">Recent Customers (last 24 hours)</h3>
+
+
+                <table>
+                    <tr>
+                        <th style="width: 12.5%;">ID NUMBER</th>
+                        <th style="width: 12.5%;">NAME</th>
+                        <th style="width: 8%;">CITIZEN</th>
+                        <th style="width: 10%;">FOOD</th>
+                        <th style="width: 6%;">DATE</th>
+                        <th style="width: 6%;">TIME</th>
+                        <th style="width: 10%;">CASHIER</th>
+                        <th style="width: 7.5%;">BRANCH</th>
+                        <th style="width: 5%;">DISC%</th>
+                        <th style="width: 5%;">PRICE</th>
+                        <th style="width: 5%;">TOTAL</th>
+                        <th style="width: 12.5%;">CONTROL #</th>
+
+                    </tr>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Enter Password</h2>
+            <input class="modal-password-input" type="password" id="passwordInput" placeholder="Enter your password">
+            <button class="modal-password-btn" id="passwordSubmit">Submit</button>
+        </div>
+    </div>
+
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img id="modalImage" src="" alt="ID Image" style="width: 100%;">
+        </div>
+    </div>
+
+    <script>
+         document.addEventListener("DOMContentLoaded", function () {
+        const branchSelect = document.getElementById("branchSelect");
+        const tableBody = document.getElementById("tableBody");
+        const totalCustomers = document.getElementById("totalCustomers");
+        const totalSenior = document.getElementById("totalSenior");
+        const totalPWD = document.getElementById("totalPWD");
+        let pieChart, barChart;
+
+// Function to create the Pie Chart
+function createPieChart(data) {
+    const ctx = document.getElementById('myPieChart').getContext('2d');
+    if (pieChart) pieChart.destroy(); // Destroy existing chart if it exists
+    pieChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Drinks', 'Pastry', 'Pasta'],
+            datasets: [{
+                label: 'Food Categories',
+                data: data,
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+
+// Function to create the Bar Chart
+function createBarChart(data) {
+    const ctx = document.getElementById('myBarChart').getContext('2d');
+    if (barChart) barChart.destroy(); // Destroy existing chart if it exists
+    barChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Senior Citizens', 'PWD', 'Others', 'Total'],
+            datasets: [{
+                label: 'Count',
+                data: data,
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+// Function to fetch data based on the selected period and branch
+function fetchChartData(period, chartType) {
+    const selectedBranch = branchSelect.value; // Get the selected branch
+    fetch(`fetch_chart_data.php?period=${period}&chartType=${chartType}&branch=${selectedBranch}`)
+        .then(response => response.json())
+        .then(data => {
+            if (chartType === 'pie') {
+                createPieChart(data);
+            } else if (chartType === 'bar') {
+                createBarChart(data);
+            }
+        })
+        .catch(error => console.error('Error fetching chart data:', error));
+}
+
+// Event listeners for period selection
+document.getElementById('pieChartPeriod').addEventListener('change', function () {
+    const period = this.value;
+    fetchChartData(period, 'pie');
+});
+
+document.getElementById('barChartPeriod').addEventListener('change', function () {
+    const period = this.value;
+    fetchChartData(period, 'bar');
+});
+
+// Event listener for branch selection
+branchSelect.addEventListener('change', function () {
+    const periodPie = document.getElementById('pieChartPeriod').value;
+    const periodBar = document.getElementById('barChartPeriod').value;
+    fetchChartData(periodPie, 'pie');
+    fetchChartData(periodBar, 'bar');
+});
+
+// Initialize charts with default data (Week) on page load
+fetchChartData('week', 'pie');
+fetchChartData('week', 'bar');
+
+
+        // Fetch initial data
+        fetch("superadmin_recent_customers.php")
+            .then(response => response.json())
+            .then(data => {
+                populateBranchDropdown(data.branches);
+                populateTable(data.customers);
+                updateCounters(data.totalDiscounted, data.totalSenior, data.totalPWD);
+            })
+            .catch(error => console.error("Error fetching data:", error));
+
+        // Populate the branch dropdown
+        function populateBranchDropdown(branches) {
+            branchSelect.innerHTML = `<option value="all">All</option>`;
+            branches.forEach(branch => {
+                const option = document.createElement("option");
+                option.value = branch.toLowerCase();
+                option.textContent = branch;
+                branchSelect.appendChild(option);
+            });
+        }
+
+        // Populate the table with customer data
+        function populateTable(customers) {
+            tableBody.innerHTML = "";
+            customers.forEach(customer => {
+                const row = `
+                    <tr>
+                        <td>${customer.ID}</td>
+                        <td>${customer.name}</td>
+                        <td>${customer.citizen}</td>
+                        <td>${customer.food}</td>
+                        <td>${customer.date}</td>
+                        <td>${customer.time}</td>
+                        <td>${customer.cashier}</td>
+                        <td>${customer.branch}</td>
+                        <td>${customer.discount_percentage}</td>
+                        <td>${customer.price}</td>
+                        <td>${customer.discounted_price}</td>
+                        <td>${customer.control_number}</td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        // Update counters
+        function updateCounters(totalDiscounted, totalSenior, totalPWD) {
+            totalCustomers.textContent = totalDiscounted;
+            totalSenior.textContent = totalSenior;
+            totalPWD.textContent = totalPWD;
+        }
+
+        // Handle branch selection change
+        branchSelect.addEventListener("change", function () {
+            const selectedBranch = this.value;
+
+            fetch(`superadmin_recent_customers.php?branch=${selectedBranch}`)
+                .then(response => response.json())
+                .then(data => {
+                    populateTable(data.customers);
+                    updateCounters(data.totalDiscounted, data.totalSenior, data.totalPWD);
+                })
+                .catch(error => console.error("Error fetching filtered data:", error));
+
+                    totalCustomers.textContent = data.totalDiscounted;
+                    totalSenior.textContent = data.totalSenior;
+                    totalPWD.textContent = data.totalPWD;
+
+                    // Add event listeners to image links
+                    document.querySelectorAll(".image-link").forEach(link => {
+                        link.addEventListener("click", function (event) {
+                            event.preventDefault();
+                            const imageData = this.getAttribute("data-image");
+                            showImageModal(imageData);
+                        });
+                    });
+                })
+                .catch(error => console.error("Error fetching customer data:", error));
+        });
+
+        function showImageModal(imageData) {
+            const modal = document.getElementById("imageModal");
+            const modalImage = document.getElementById("modalImage");
+            const closeBtn = document.querySelector("#imageModal .close");
+
+            modalImage.src = `data:image/jpeg;base64,${imageData}`;
+            modal.style.display = "block";
+
+            closeBtn.onclick = function () {
+                modal.style.display = "none";
+            }
+
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        }
+
+        document.getElementById("logoutButton").addEventListener("click", function () {
+            window.location.href = "logout.php";
+        });
+
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () {
+            history.go(1);
+        };
+
+        document.getElementById("accountManagementLink").addEventListener("click", function (event) {
+            event.preventDefault();
+            showPasswordModal("superadmin_accountManagement.html");
+        });
+
+        document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
+            event.preventDefault();
+            showPasswordModal("superadmin_accountSettings.html");
+        });
+
+        function showPasswordModal(redirectUrl) {
+            const modal = document.getElementById("passwordModal");
+            const closeBtn = document.querySelector(".close");
+            const submitBtn = document.getElementById("passwordSubmit");
+
+            modal.style.display = "block";
+
+            closeBtn.onclick = function () {
+                modal.style.display = "none";
+            }
+
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+
+            submitBtn.onclick = function () {
+                const password = document.getElementById("passwordInput").value;
+                if (password) {
+                    fetch("verify_password.php", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: "password=" + encodeURIComponent(password)
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.location.href = redirectUrl;
+                            } else {
+                                alert("Incorrect password. Please try again.");
+                            }
+                        })
+                        .catch(error => console.error("Error verifying password:", error));
+                }
+            }
+        }
+    </script>
+
+</body>
+
+</html>

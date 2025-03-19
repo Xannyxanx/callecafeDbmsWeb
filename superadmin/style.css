@@ -4,13 +4,13 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f4f4f4;
+    background-color: #554033;
     font-family: Arial, sans-serif;
     margin: 0;
 }
 
 .login-container {
-    background: white;
+    background: #E0C1A6;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -56,22 +56,29 @@
 
 /* LOGIN PAGE END */
 /* SIDEBAR START */
+
 body {
-    background-color: #f4f4f4;
+    background-color: #E0C1A6;
     font-family: Arial, sans-serif;
     margin: 0;
 }
 
 nav {
     width: 20%;
-    background-color: #333;
+    background-color: #554033;
     padding: 15px;
-    color: white;
-    height: 100vh;
+    color: #E0C1A6;
+    min-height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    overflow-y: auto;
 }
 
 nav h2 {
-    color: white;
+    color: #E0C1A6;
+    font-weight: bolder;
 }
 
 nav ul {
@@ -84,22 +91,28 @@ nav ul li {
 }
 
 nav ul li a {
-    color: white;
+    color: #E0C1A6;
     text-decoration: none;
     display: block;
     padding: 10px;
     transition: background-color 0s, color 0s;
+    font-weight: bold;
 }
 
 nav ul li a:hover {
-    background-color: #f4f4f4;
-    color: black;
+    background-color: #E0C1A6;
+    color: #554033;
     width: 100%;
 }
 
+.main-content h1 {
+    color: #5C4033;
+    font-weight: bolder;
+}
 
 main {
     width: 80%;
+    margin-left: 22%;
     padding: 15px;
 }
 
@@ -115,8 +128,12 @@ main {
     border-radius: 20px;
     padding-left: 35px;
     border-color: #ddd;
+    border: 1px solid #ddd;
     box-shadow: none;
     margin-bottom: 10px;
+    font-size: 13px;
+    background-color: #efe4d4;
+    color: #333;
 }
 
 .archive-form input:focus {
@@ -131,13 +148,16 @@ main {
     left: 10px;
 }
 
+
 .date-input {
 
-    border-radius: 5px;
+    border-radius: 20px;
     border: 1px solid #ddd;
-    font-size: 14px;
-    background-color: transparent;
+    font-size: 13px;
+    background-color: #efe4d4;
     cursor: pointer;
+    color: #333;
+    height: 34px;
 }
 
 .date-input:focus {
@@ -148,7 +168,7 @@ main {
 .registered-btn {
     padding: 10px 15px;
     background-color: #FF8C00;
-    color: white;
+    color: #efe4d4;
     border-radius: 20px;
     cursor: pointer;
     transition: background 0.2s ease;
@@ -161,7 +181,7 @@ main {
 .requests-btn {
     padding: 10px 15px;
     background-color: #00CBCB;
-    color: white;
+    color: #efe4d4;
     border-radius: 20px;
     cursor: pointer;
     transition: background 0.2s ease;
@@ -175,7 +195,7 @@ main {
 .download-btn {
     padding: 10px 15px;
     background-color: #28a745;
-    color: white;
+    color: #efe4d4;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -224,7 +244,7 @@ main {
     left: 2px;
 
     bottom: 2px;
-    background-color: white;
+    background-color: #efe4d4;
     transition: 0s;
     border-radius: 50%;
 }
@@ -278,7 +298,7 @@ td {
 
 .decline-btn {
     background-color: transparent;
-    color: white;
+    color: #efe4d4;
 }
 
 .decline-btn:hover {
@@ -325,11 +345,12 @@ td {
 /* ACCOUNTS SETTINGS START*/
 /* Center the main content */
 .account-settings-container {
-    padding: 20px;
+
     flex-grow: 1;
-    max-width: 400px;
     background-color: transparent;
-    margin-left: 20px;
+    width: 25%;
+    margin-left: 22%;
+    padding: 15px;
 
 }
 
@@ -354,6 +375,7 @@ td {
 .account-settings-user-info p {
     font-size: 0.95rem;
     margin: 8px 0;
+
 }
 
 .account-settings-form label {
@@ -372,7 +394,7 @@ td {
 
 .account-settings-form button {
     background-color: #007BFF;
-    color: white;
+    color: #efe4d4;
     padding: 8px 16px;
     border: none;
     border-radius: 4px;
@@ -396,14 +418,14 @@ table {
 
 table th,
 table td {
-    border: 1px solid #ddd;
+    border: 0.3px solid black;
     padding: 8px;
     text-align: center;
 }
 
 table th {
-    background-color: #333;
-    color: white;
+    background-color: #556b2f;
+    color: #efe4d4;
     font-weight: bold;
 }
 
@@ -420,12 +442,13 @@ table tr:hover {
 }
 
 .counter-box {
-    background: #333;
-    color: white;
+    background: #556b2f;
+    color: #efe4d4;
     padding: 15px;
     border-radius: 10px;
     text-align: center;
     min-width: 150px;
+    border: 0.3px solid black;
 }
 
 .charts-container {
@@ -457,15 +480,15 @@ canvas {
 
 
 .modal-content {
-    background-color: #333;
+    background: #554033;
     margin: 5% auto;
     padding: 20px;
-    border: 1px solid #888;
+    border: none;
     border-radius: 10px;
     width: 80%;
     max-width: 280px;
     text-align: center;
-    color: white;
+    color: #efe4d4;
     margin-bottom: 20px;
 
 }
@@ -478,7 +501,6 @@ canvas {
     margin-bottom: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
     box-sizing: border-box;
 
 }
@@ -487,11 +509,15 @@ canvas {
     width: 100%;
     padding: 10px;
     background: #007BFF;
-    color: white;
+    color: #efe4d4;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background 0.3s ease;
+}
+
+.modal-password-btn:hover {
+    background: #0056b3;
 }
 
 .close {
@@ -506,4 +532,40 @@ canvas {
     color: black;
     text-decoration: none;
     cursor: pointer;
+}
+
+/*SUPER ADMIN STUFF*/
+.dropdown {
+    display: inline-block;
+    margin-right: 3px;
+    margin-left: 3px;
+    font-size: 10px;
+    margin-top: 10px;
+}
+
+.dropdown select {
+    font-size: 10px;
+    height: 34px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    padding: 0 10px;
+    font-size: 14px;
+    background-color: #efe4d4;
+    color: #333;
+    box-shadow: none;
+    cursor: pointer;
+}
+
+.chart-box {
+    flex: 1;
+    /* Ensures equal width */
+    text-align: center;
+    /* Centers the headings */
+}
+
+canvas {
+    max-width: 100%;
+    /* Prevents overflow */
+    height: 300px;
+    /* Fixes chart height */
 }

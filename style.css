@@ -456,9 +456,13 @@ table tr:hover {
 
 .charts-container {
     display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    margin-top: 20px;
+    /* Makes items align side by side */
+    align-items: center;
+    /* Aligns items vertically */
+    gap: 20px;
+    /* Adds space between charts */
+    width: 90%;
+    /* Ensures it stretches fully */
 }
 
 canvas {

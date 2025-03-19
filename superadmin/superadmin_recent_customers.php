@@ -1,0 +1,113 @@
+<?php
+session_start();
+
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
+
+$servername = "localhost"; 
+$username = "root"; 
+$password = ""; 
+$dbname = "callecafe";
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Check if the user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: 0.login.html");
+    exit();
+}
+
+// Fetch distinct branches from the users table
+// Check if the user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: 0.login.html");
+    exit();
+}
+
+// Fetch distinct branches from the users table, excluding "superadmin"
+$sqlBranches = "SELECT DISTINCT branch FROM users WHERE branch IS NOT NULL AND branch != '' AND LOWER(branch) != 'superadmin'";
+$resultBranches = $conn->query($sqlBranches);
+
+$branches = [];
+if ($resultBranches->num_rows > 0) {
+    while ($row = $resultBranches->fetch_assoc()) {
+        $branches[] = $row['branch'];
+    }
+}
+
+// Fetch customers based on the selected branch
+$selectedBranch = isset($_GET['branch']) ? strtolower(trim($_GET['branch'])) : 'all';
+
+$customers = [];
+$counters = [
+    "totalDiscounted" => 0,
+    "totalSenior" => 0,
+    "totalPWD" => 0
+];
+
+if ($selectedBranch === 'all') {
+    // Fetch all customers from all branches
+    $sqlTable = "SELECT ID, name, citizen, food, date, time, cashier, branch, discount_percentage, price, discounted_price, control_number 
+                 FROM dapitancustomers
+                 ORDER BY time DESC 
+                 LIMIT 5";
+
+    $sqlCounters = "SELECT 
+        COUNT(*) AS totalDiscounted,
+        SUM(CASE WHEN LOWER(citizen) = 'senior citizen' THEN 1 ELSE 0 END) AS totalSenior,
+        SUM(CASE WHEN LOWER(citizen) = 'pwd' THEN 1 ELSE 0 END) AS totalPWD
+        FROM dapitancustomers";
+} else {
+    // Fetch customers for the selected branch
+    $sqlTable = "SELECT ID, name, citizen, food, date, time, cashier, branch, discount_percentage, price, discounted_price, control_number 
+                 FROM dapitancustomers
+                 WHERE LOWER(branch) = ?
+                 ORDER BY time DESC 
+                 LIMIT 5";
+
+    $sqlCounters = "SELECT 
+        COUNT(*) AS totalDiscounted,
+        SUM(CASE WHEN LOWER(citizen) = 'senior citizen' THEN 1 ELSE 0 END) AS totalSenior,
+        SUM(CASE WHEN LOWER(citizen) = 'pwd' THEN 1 ELSE 0 END) AS totalPWD
+        FROM dapitancustomers
+        WHERE LOWER(branch) = ?";
+}
+
+$stmt = $conn->prepare($sqlTable);
+if ($selectedBranch !== 'all') {
+    $stmt->bind_param("s", $selectedBranch);
+}
+$stmt->execute();
+$resultTable = $stmt->get_result();
+
+if ($resultTable->num_rows > 0) {
+    while ($row = $resultTable->fetch_assoc()) {
+        $customers[] = $row;
+    }
+}
+
+// Fetch counters
+$stmtCounters = $conn->prepare($sqlCounters);
+if ($selectedBranch !== 'all') {
+    $stmtCounters->bind_param("s", $selectedBranch);
+}
+$stmtCounters->execute();
+$resultCounters = $stmtCounters->get_result();
+$counters = $resultCounters->fetch_assoc();
+
+$conn->close();
+
+header('Content-Type: application/json');
+echo json_encode([
+    "branches" => $branches,
+    "customers" => $customers,
+    "totalDiscounted" => $counters['totalDiscounted'],
+    "totalSenior" => $counters['totalSenior'],
+    "totalPWD" => $counters['totalPWD']
+]);
+?>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Calle Cafe - Superadmin Branch Management</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="icon" href="images/browserlogo.png" type="image/png">
+</head>
+
+<body>
+    <div>
+        <!-- SIDEBAR -->
+        <nav class="sidebar">
+            <h2>Calle Cafe</h2>
+            <ul>
+                <li><a href="superadmin_home.html">HOME</a></li>
+                <li><a href="superadmin_discountedCustomers.html">DISCOUNTED CUSTOMERS</a></li>
+                <li><a href="superadmin_archive.html">ARCHIVE</a></li>
+                <li><a href="#" id="accountManagementLink">ACCOUNT MANAGEMENT</a></li>
+                <li><a href="#" id="userAccountSettingsLink">SUPER ADMIN SETTINGS</a></li>
+                <li><a href="superadmin_branchmgmt.html">BRANCH MANAGEMENT</a></li>
+                <li><a id="logoutButton">LOGOUT</a></li>
+            </ul>
+        </nav>
+
+        <!-- MAIN CONTENT -->
+        <main class="account-settings-container">
+            <h2 style="margin: 20px;">Branch Management</h2>
+
+            <!-- CURRENT BRANCH -->
+            <div class="account-settings-user-info" style="text-align: center;">
+                <h3 style="text-align: center;">Current Branch</h3>
+                <div style="display: flex; align-items: left;">
+                    <p style="padding-right: 27px;"><strong>Select Branch:</strong></p>
+                    <select id="branchSelect" onchange="handleBranchChange()" style="margin-left: 20px;">
+                    </select>
+                </div>
+                <div class="account-settings-text-container" style="text-align: left;">
+                    <p><strong>Name:</strong> <span id="currentName">ADMIN USERNAME</span></p>
+                    <p><strong>Email:</strong> <span id="currentEmail">ADMIN EMAIL</span></p>
+                </div>
+            </div>
+
+
+         <!-- UPDATE BRANCH ACCOUNT -->
+<div class="account-settings-user-info" style="text-align: center;">
+    <h3 style="text-align: center;">Update Branch Account</h3>
+    <form class="account-settings-form" onsubmit="event.preventDefault(); updateBranch();">
+        <!-- Dropdown for available branches -->
+        <select id="newBranch" style="margin-bottom: 10px;">
+            <option value="">Select a new branch</option>
+        </select>
+        <input type="text" id="name" placeholder="Enter New Name">
+        <input type="email" id="email" placeholder="Enter New Email">
+        <input type="password" id="password" placeholder="Enter New Password">
+        <input type="password" id="confirmPassword" placeholder="Confirm New Password">
+        <button type="submit">Update</button>
+    </form>
+</div>
+
+            <!-- UPDATE GLOBAL DISCOUNT -->
+            <div class="account-settings-user-info">
+                <h3 style="text-align: center;">Update Global Discount</h3>
+                <form class="account-settings-form" onsubmit="event.preventDefault(); updateDiscount();">
+                    <input type="number" id="pwdDiscount" placeholder="PWD Discount (%)" min="0" max="100">
+                    <input type="number" id="seniorDiscount" placeholder="Senior Citizen Discount (%)" min="0" max="100">
+                    <input type="number" id="othersDiscount" placeholder="Others Discount (%)" min="0" max="100">
+                    <button type="submit">Apply</button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Fetch and populate branches
+            fetchBranches();
+        });
+
+        // Fetch branches and populate the dropdown
+        function fetchBranches() {
+    fetch("get_branch_user.php")
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const branchSelect = document.getElementById("branchSelect");
+                const newBranchSelect = document.getElementById("newBranch");
+                branchSelect.innerHTML = "<option value=''>Select a branch</option>";
+                newBranchSelect.innerHTML = "<option value=''>Select a new branch</option>";
+
+                data.branches.forEach(branch => {
+                    const option = document.createElement("option");
+                    option.value = branch.toLowerCase();
+                    option.textContent = branch;
+                    branchSelect.appendChild(option.cloneNode(true)); // Clone for the new branch dropdown
+                    newBranchSelect.appendChild(option);
+                });
+
+                // Automatically select the current logged-in branch
+                if (data.currentBranch) {
+                    branchSelect.value = data.currentBranch.toLowerCase();
+                    handleBranchChange(); // Fetch and display branch details
+                }
+            } else {
+                alert("Error fetching branches: " + data.error);
+            }
+        })
+        .catch(error => console.error("Error fetching branches:", error));
+}
+
+        // Handle branch selection change
+        function handleBranchChange() {
+    const branch = document.getElementById("branchSelect").value;
+
+    if (!branch) {
+        document.getElementById("currentName").innerText = "ADMIN USERNAME";
+        document.getElementById("currentEmail").innerText = "ADMIN EMAIL";
+        return;
+    }
+
+    // Fetch user details for the selected branch
+    fetch(`get_branch_user.php?branch=${branch}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById("currentName").innerText = data.user.name;
+                document.getElementById("currentEmail").innerText = data.user.email;
+            } else {
+                alert(data.error);
+                document.getElementById("currentName").innerText = "ADMIN USERNAME";
+                document.getElementById("currentEmail").innerText = "ADMIN EMAIL";
+            }
+        })
+        .catch(error => console.error("Error fetching branch user:", error));
+}
+
+
+        // Update branch account
+   function updateBranch() {
+    const branch = document.getElementById("branchSelect").value;
+    const newBranch = document.getElementById("newBranch").value;
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+
+    if (!branch) {
+        alert("Please select a branch.");
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        alert("Passwords do not match.");
+        return;
+    }
+
+    const branchData = {
+        branch,
+        newBranch, // Include the new branch in the update request
+        name,
+        email,
+        password
+    };
+
+    fetch("updating_branch.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(branchData)
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message); // Show success message
+                // Clear the form fields
+                document.getElementById("name").value = "";
+                document.getElementById("email").value = "";
+                document.getElementById("password").value = "";
+                document.getElementById("confirmPassword").value = "";
+                // Refresh branch details
+                handleBranchChange();
+            } else {
+                alert(data.error || "Update failed."); // Show error message
+            }
+        })
+        .catch(error => {
+            console.error("Error updating branch:", error);
+            alert("An error occurred while updating the branch.");
+        });
+}
+
+        // Update global discount
+        function updateDiscount() {
+            const pwdDiscount = document.getElementById("pwdDiscount").value;
+            const seniorDiscount = document.getElementById("seniorDiscount").value;
+            const othersDiscount = document.getElementById("othersDiscount").value;
+
+            const discountData = {
+                pwd: pwdDiscount,
+                senior: seniorDiscount,
+                others: othersDiscount
+            };
+
+            fetch("updating_branch.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(discountData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                })
+                .catch(error => console.error("Error updating discount:", error));
+        }
+
+        // Logout
+        document.getElementById("logoutButton").addEventListener("click", function () {
+            window.location.href = "logout.php";
+        });
+    </script>
+</body>
+
+</html>

@@ -5,35 +5,42 @@
     <title>Calle Cafe - Account Management</title>
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="icon" href="images/browserlogo.png" type="browser logo">
+
 </head>
 
 <body>
-    <div class="container" style="display: flex; height: 100vh;">
+    <div class="container">
         <!-- SIDEBAR -->
         <nav class="sidebar">
             <h2>Calle Cafe</h2>
             <ul>
-                <li><a href="1.home.html">HOME</a></li>
-                <li><a href="2.discounted_customers.html">DISCOUNTED CUSTOMERS</a></li>
-                <li><a href="3.archive.html">ARCHIVE</a></li>
+                <li><a href="superadmin_home.html">HOME</a></li>
+                <li><a href="superadmin_discountedCustomers.html">DISCOUNTED CUSTOMERS</a></li>
+                <li><a href="superadmin_archive.html">ARCHIVE</a></li>
                 <li><a href="#" id="accountManagementLink">ACCOUNT MANAGEMENT</a></li>
-                <li><a href="#" id="userAccountSettingsLink">USER ACCOUNT SETTINGS</a></li>
-                <li><a href="0.login.html">LOGOUT</a></li>
+                <li><a href="#" id="userAccountSettingsLink">SUPER ADMIN SETTINGS</a></li>
+                <li><a href="superadmin_branchmgmt.html">BRANCH MANAGEMENT</a></li>
+                <li><a id="logoutButton">LOGOUT</a></li>
             </ul>
         </nav>
 
         <!-- MAIN CONTENT -->
-        <main class="main-content" style="width: 80%; padding: 15px;">
+        <main class="main-content">
             <h2>Registered Users</h2>
             <form class="archive-form" action="#" method="get">
                 <a href="4.2requests.html" style="text-decoration: none;">
                     <button type="button" id="requestsBtn" class="registered-btn">USER REQUESTS</button>
                 </a>
-                <select id="branchFilter">
-                    <option value="all">All</option>
-                    <option value="dapitan">Dapitan</option>
-                    <option value="espana">Espana</option>
-                </select>
+
+                <!-- Dropdown for branch selection -->
+                <div class="dropdown">
+                    <select id="branchFilter">
+                        <option value="all">All</option>
+                        <option value="dapitan">Dapitan</option>
+                        <option value="espana">Espana</option>
+                    </select>
+                </div>
+
                 <input type="search" id="search" name="query" placeholder="Search..." required>
             </form>
 
@@ -70,13 +77,63 @@
             let usersData = [];
 
             // Fetch user data
-            fetch("4.1accountManagement.php")
+            fetch("superadmin_accountManagement.php")
                 .then(response => response.json())
                 .then(data => {
                     usersData = data;
                     populateTable(usersData);
                 })
                 .catch(error => console.error("Error fetching user data:", error));
+                
+                document.getElementById("accountManagementLink").addEventListener("click", function (event) {
+                event.preventDefault();
+                showPasswordModal("superadmin_accountManagement.html");
+            });
+
+            document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
+                event.preventDefault();
+                showPasswordModal("superadmin_accountSettings.html");
+            });
+
+            function showPasswordModal(redirectUrl) {
+                const modal = document.getElementById("passwordModal");
+                const closeBtn = document.querySelector(".close");
+                const submitBtn = document.getElementById("passwordSubmit");
+
+                modal.style.display = "block";
+
+                closeBtn.onclick = function() {
+                    modal.style.display = "none";
+                }
+
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                }
+
+                submitBtn.onclick = function() {
+                    const password = document.getElementById("passwordInput").value;
+                    if (password) {
+                        fetch("verify_password.php", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                            body: "password=" + encodeURIComponent(password)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.location.href = redirectUrl;
+                            } else {
+                                alert("Incorrect password. Please try again.");
+                            }
+                        })
+                        .catch(error => console.error("Error verifying password:", error));
+                    }
+                }
+            }
+
+
 
             // Populate table with data
             function populateTable(data) {
@@ -143,14 +200,17 @@
                 });
 
                 // Hide/show actions column based on branch filter
-                const branchFilter = document.getElementById("branchFilter");
-                const actionCells = document.querySelectorAll("td:nth-child(6)");
-                branchFilter.addEventListener("change", function () {
-                    const selectedBranch = this.value;
-                    actionCells.forEach(cell => {
-                        cell.style.display = selectedBranch === "all" ? "table-cell" : "none";
-                    });
-                });
+                document.getElementById("branchFilter").addEventListener("change", function () {
+    const selectedBranch = this.value.toLowerCase();
+
+    // Fetch data based on the selected branch
+    fetch(`superadmin_accountManagement.php?branch=${selectedBranch}`)
+        .then(response => response.json())
+        .then(data => {
+            populateTable(data); // Populate the table with the filtered data
+        })
+        .catch(error => console.error("Error fetching filtered data:", error));
+});
             }
 
             // Edit user
@@ -192,19 +252,19 @@
                 let newPin = document.getElementById(`editPin-${userID}`).value;
                 let newBranch = document.getElementById(`editBranch-${userID}`).value;
 
-                fetch("4.1.update.php", {
+                fetch("superadmin_update.php", {
                     method: "POST",
                     headers: { "Content-Type": "application/x-www-form-urlencoded" },
                     body: "id=" + encodeURIComponent(userID) + "&username=" + encodeURIComponent(newUsername) + "&pin=" + encodeURIComponent(newPin) + "&branch=" + encodeURIComponent(newBranch)
                 })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.message);
-                    if (data.status === "success") {
-                        location.reload();
-                    }
-                })
-                .catch(error => console.error("Error updating user:", error));
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.message);
+                        if (data.status === "success") {
+                            location.reload();
+                        }
+                    })
+                    .catch(error => console.error("Error updating user:", error));
             }
 
             // Delete user
@@ -229,14 +289,14 @@
                     headers: { "Content-Type": "application/x-www-form-urlencoded" },
                     body: "id=" + encodeURIComponent(userID)
                 })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.message);
-                    if (data.status === "success") {
-                        location.reload();
-                    }
-                })
-                .catch(error => console.error("Error deleting user:", error));
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.message);
+                        if (data.status === "success") {
+                            location.reload();
+                        }
+                    })
+                    .catch(error => console.error("Error deleting user:", error));
             }
 
             // Search functionality
