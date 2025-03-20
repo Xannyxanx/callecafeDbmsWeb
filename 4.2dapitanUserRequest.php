@@ -25,12 +25,7 @@ $user_id = $_SESSION['user_id'];
 $user_name = $_SESSION['user_name'];
 $branch = $_SESSION['branch'];
 
-if ($branch == "Dapitan"){
-$sql = "SELECT * FROM dapitan_users_request";
-}
-else{
-$sql = "SELECT * FROM espana_users_request";
-}
+$sql = "SELECT ID, name, username, pin FROM cashier_requests where branch = '$branch'";
 
 $result = $conn->query($sql);
 $request = [];

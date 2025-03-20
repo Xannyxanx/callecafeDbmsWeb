@@ -41,11 +41,8 @@ $requestID = intval($_POST['id']);
 error_log("Approving Request ID: " . $requestID);
 
 
-if ($branch == "Dapitan") {
-    $checkUserQuery = "SELECT * FROM `dapitan_users_request` WHERE ID = $requestID";
-} else {
-    $checkUserQuery = "SELECT * FROM `espana_users_request` WHERE ID = $requestID";
-}
+    $checkUserQuery = "SELECT * FROM `cashier_requests` WHERE ID = $requestID";
+
 
 $result = $conn->query($checkUserQuery);
 if ($result->num_rows == 0) {
@@ -54,14 +51,8 @@ if ($result->num_rows == 0) {
     exit();
 }
 
-
-if ($branch == "Dapitan") {
-    $sqlTransferData = "INSERT INTO `dapitan_users` (ID, name, username, pin) SELECT ID, name, username, pin FROM `dapitan_users_request` WHERE ID = ?";
-    $sqlDelete = "DELETE FROM `dapitan_users_request` WHERE ID = ?";
-} else {
-    $sqlTransferData = "INSERT INTO `espana_users` (ID, name, username, pin) SELECT ID, name, username, pin FROM `espana_users_request` WHERE ID = ?";
-    $sqlDelete = "DELETE FROM `espana_users_request` WHERE ID = ?";
-}
+    $sqlTransferData = "INSERT INTO `cashier_users` (ID, name, username, pin, branch) SELECT ID, name, username, pin, branch FROM `cashier_requests` WHERE ID = ?";
+    $sqlDelete = "DELETE FROM `cashier_requests` WHERE ID = ?";
 
 $stmt = $conn->prepare($sqlTransferData);
 if (!$stmt) {

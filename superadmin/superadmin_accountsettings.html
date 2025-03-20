@@ -19,7 +19,7 @@
                 <li><a href="superadmin_archive.html">ARCHIVE</a></li>
                 <li><a href="#" id="accountManagementLink">ACCOUNT MANAGEMENT</a></li>
                 <li><a href="#" id="userAccountSettingsLink">SUPER ADMIN SETTINGS</a></li>
-                <li><a href="superadmin_branchmgmt.html">BRANCH MANAGEMENT</a></li>
+                <li><a href="#" id="branchManagementLink">BRANCH MANAGEMENT</a></li>
                 <li><a id="logoutButton">LOGOUT</a></li>
             </ul>
         </nav>
@@ -122,15 +122,21 @@
         window.history.pushState(null, "", window.location.href);
     };
 
-            document.getElementById("accountManagementLink").addEventListener("click", function (event) {
-            event.preventDefault();
-            showPasswordModal("superadmin_accountManagement.html");
-        });
+             document.getElementById("accountManagementLink").addEventListener("click", function (event) {
+                event.preventDefault();
+                showPasswordModal("superadmin_accountManagement.html");
+            });
 
-        document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
+            document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
+                event.preventDefault();
+                showPasswordModal("superadmin_accountSettings.html");
+                
+            });
+
+            document.getElementById("branchManagementLink").addEventListener("click", function (event) {
             event.preventDefault();
-            showPasswordModal("superadmin_accountSettings.html");
-        });
+            showPasswordModal("superadmin_branchmgmt.html");
+            });
 
         function showPasswordModal(redirectUrl) {
             const modal = document.getElementById("passwordModal");

@@ -31,22 +31,27 @@ $branch = $_SESSION['branch'];
 
 error_log("Received POST data: " . print_r($_POST, true));
 
-if (!isset($_POST['id']) || empty($_POST['id']) || !isset($_POST['pin']) || empty($_POST['pin']) || !isset($_POST['username']) || empty($_POST['username'])) {
-    error_log("No user ID, PIN, or username received: " . print_r($_POST, true));
-    echo json_encode(["status" => "error", "message" => "No user ID, PIN, or username provided"]);
+if (!isset($_POST['id']) || empty($_POST['id']) || 
+    !isset($_POST['pin']) || empty($_POST['pin']) || 
+    !isset($_POST['username']) || empty($_POST['username']) ||
+    !isset($_POST['branch']) || empty($_POST['branch'])) {
+    
+    error_log("Missing required fields: " . print_r($_POST, true));
+    echo json_encode(["status" => "error", "message" => "Missing required fields"]);
     exit();
 }
 
 $userID = intval($_POST['id']);
 $newPin = $_POST['pin'];
 $newUsername = $_POST['username'];
-error_log("Updating user ID: " . $userID . " with new PIN: " . $newPin . " and new username: " . $newUsername);
+$newBranch = $_POST['branch'];
 
-    $sqlUpdate = "UPDATE `cashier_users` SET pin = ?, username = ? WHERE ID = ?";
+error_log("Updating user ID: " . $userID . " with new PIN: " . $newPin . ", new username: " . $newUsername . ", and branch: " . $newBranch);
 
+$sqlUpdate = "UPDATE `cashier_users` SET branch = ?, pin = ?, username = ? WHERE ID = ?";
 
 $stmt = $conn->prepare($sqlUpdate);
-$stmt->bind_param("ssi", $newPin, $newUsername, $userID);
+$stmt->bind_param("sssi", $newBranch, $newPin, $newUsername, $userID);
 
 if (!$stmt->execute()) {
     error_log("SQL Error (Update): " . $stmt->error);

@@ -27,7 +27,7 @@
         <main>
             <h2>User Requests</h2>
             <form class="archive-form" action="#" method="get">
-                <a href="4.1account_management.html" style="text-decoration: none;">
+                <a href="superadmin_accountManagement.html" style="text-decoration: none;">
                     <button type="button" id="currentBtn" class="requests-btn">REGISTERED USERS</button>
                 </a>
 
@@ -35,8 +35,6 @@
                 <div class="dropdown" style="margin-top: 10px;">
                     <select id="branchFilter">
                         <option value="all">Select branch</option>
-                        <option value="dapitan">Dapitan</option>
-                        <option value="espana">Espana</option>
                     </select>
                 </div>
 
@@ -74,7 +72,7 @@
         document.addEventListener("DOMContentLoaded", function () {
             let requestData = [];
 
-            fetch("4.2dapitanUserRequest.php")
+            fetch("superadmin_request.php")
                 .then(response => response.json())
                 .then(data => {
                     requestData = data;
@@ -222,69 +220,6 @@
 </html>
 <!DOCTYPE html>
 <html>
-
-<head>
-    <title>Calle Cafe - Requests</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <link rel="icon" href="images/browserlogo.png" type="image/png">
-</head>
-
-<body>
-    <div class="container" style="display: flex; height: 100vh;">
-        <!-- SIDEBAR -->
-        <nav class="sidebar">
-            <h2>Calle Cafe</h2>
-            <ul>
-                <li><a href="1.home.html">HOME</a></li>
-                <li><a href="2.discounted_customers.html">DISCOUNTED CUSTOMERS</a></li>
-                <li><a href="3.archive.html">ARCHIVE</a></li>
-                <li><a href="#" id="accountManagementLink">ACCOUNT MANAGEMENT</a></li>
-                <li><a href="#" id="userAccountSettingsLink">USER ACCOUNT SETTINGS</a></li>
-                <li><a id="logoutButton">LOGOUT</a></li>
-            </ul>
-        </nav>
-
-        <!-- MAIN CONTENT -->
-        <main style="width: 80%; padding: 15px;">
-            <h2>User Requests</h2>
-            <form class="archive-form" action="#" method="get">
-                <a href="4.1account_management.html" style="text-decoration: none;">
-                    <button type="button" id="currentBtn" class="requests-btn">REGISTERED USERS</button>
-                </a>
-                <select id="branchFilter">
-                    <option value="all">All</option>
-                    <option value="dapitan">Dapitan</option>
-                    <option value="espana">Espana</option>
-                </select>
-                <input type="search" id="search" name="query" placeholder="Search..." required>
-            </form>
-
-            <!-- TABLE -->
-            <div>
-                <h3>Requests List</h3>
-                <table border="1" width="100%">
-                    <tr>
-                        <th style="width: 10%;">ID</th>
-                        <th>NAME</th>
-                        <th>BRANCH</th>
-                        <th>USERNAME</th>
-                        <th style="width: 25%;">PIN</th>
-                        <th style="width: 15%;">Actions</th>
-                    </tr>
-                    <tbody id="tableBody"></tbody>
-                </table>
-            </div>
-        </main>
-    </div>
-
-    <div id="passwordModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Enter Password</h2>
-            <input type="password" id="passwordInput" placeholder="Enter your password">
-            <button id="passwordSubmit">Submit</button>
-        </div>
-    </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {

@@ -4,7 +4,7 @@
 <head>
     <title>Calle Cafe - Account Management</title>
     <link rel="stylesheet" type="text/css" href="style.css">
-    <link rel="icon" href="images/browserlogo.png" type="browser logo">
+    <link rel="icon" href="admin_images/browserlogo.png" type="browser logo">
 
 </head>
 
@@ -19,7 +19,7 @@
                 <li><a href="superadmin_archive.html">ARCHIVE</a></li>
                 <li><a href="#" id="accountManagementLink">ACCOUNT MANAGEMENT</a></li>
                 <li><a href="#" id="userAccountSettingsLink">SUPER ADMIN SETTINGS</a></li>
-                <li><a href="superadmin_branchmgmt.html">BRANCH MANAGEMENT</a></li>
+                <li><a href="#" id="branchManagementLink">BRANCH MANAGEMENT</a></li>
                 <li><a id="logoutButton">LOGOUT</a></li>
             </ul>
         </nav>
@@ -28,7 +28,7 @@
         <main class="main-content">
             <h2>Registered Users</h2>
             <form class="archive-form" action="#" method="get">
-                <a href="4.2requests.html" style="text-decoration: none;">
+                <a href="superadmin_request.html" style="text-decoration: none;">
                     <button type="button" id="requestsBtn" class="registered-btn">USER REQUESTS</button>
                 </a>
 
@@ -36,8 +36,6 @@
                 <div class="dropdown">
                     <select id="branchFilter">
                         <option value="all">All</option>
-                        <option value="dapitan">Dapitan</option>
-                        <option value="espana">Espana</option>
                     </select>
                 </div>
 
@@ -73,245 +71,235 @@
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let usersData = [];
-
-            // Fetch user data
-            fetch("superadmin_accountManagement.php")
-                .then(response => response.json())
-                .then(data => {
-                    usersData = data;
-                    populateTable(usersData);
-                })
-                .catch(error => console.error("Error fetching user data:", error));
-                
-                document.getElementById("accountManagementLink").addEventListener("click", function (event) {
-                event.preventDefault();
-                showPasswordModal("superadmin_accountManagement.html");
-            });
-
-            document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
-                event.preventDefault();
-                showPasswordModal("superadmin_accountSettings.html");
-            });
-
-            function showPasswordModal(redirectUrl) {
-                const modal = document.getElementById("passwordModal");
-                const closeBtn = document.querySelector(".close");
-                const submitBtn = document.getElementById("passwordSubmit");
-
-                modal.style.display = "block";
-
-                closeBtn.onclick = function() {
-                    modal.style.display = "none";
-                }
-
-                window.onclick = function(event) {
-                    if (event.target == modal) {
-                        modal.style.display = "none";
-                    }
-                }
-
-                submitBtn.onclick = function() {
-                    const password = document.getElementById("passwordInput").value;
-                    if (password) {
-                        fetch("verify_password.php", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                            body: "password=" + encodeURIComponent(password)
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                window.location.href = redirectUrl;
-                            } else {
-                                alert("Incorrect password. Please try again.");
-                            }
-                        })
-                        .catch(error => console.error("Error verifying password:", error));
-                    }
-                }
-            }
 
 
+document.addEventListener("DOMContentLoaded", function () {
+    let usersData = [];
 
-            // Populate table with data
-            function populateTable(data) {
-                let tableBody = document.getElementById("tableBody");
-                tableBody.innerHTML = "";
-
-                data.forEach(user => {
-                    let row = document.createElement("tr");
-
-                    let idCell = document.createElement("td");
-                    idCell.textContent = user.ID;
-
-                    let nameCell = document.createElement("td");
-                    nameCell.textContent = user.name;
-
-                    let branchCell = document.createElement("td");
-                    branchCell.textContent = user.branch;
-                    branchCell.setAttribute("data-branch-id", user.ID);
-
-                    let usernameCell = document.createElement("td");
-                    usernameCell.textContent = user.username;
-                    usernameCell.setAttribute("data-username-id", user.ID);
-
-                    let pinCell = document.createElement("td");
-                    pinCell.textContent = user.pin;
-                    pinCell.setAttribute("data-pin-id", user.ID);
-
-                    let actionCell = document.createElement("td");
-                    actionCell.style.textAlign = "center";
-
-                    let editBtn = document.createElement("button");
-                    editBtn.classList.add("action-btn", "approve-btn");
-                    editBtn.innerHTML = `<img src="images/edit.png" alt="Edit" class="icon">`;
-                    editBtn.setAttribute("data-id", user.ID);
-                    editBtn.addEventListener("click", function () {
-                        editUser(this.getAttribute("data-id"));
-                    });
-
-                    let deleteBtn = document.createElement("button");
-                    deleteBtn.classList.add("action-btn", "decline-btn");
-                    deleteBtn.innerHTML = `<img src="images/decline.png" alt="Decline" class="icon">`;
-                    deleteBtn.setAttribute("data-id", user.ID);
-                    deleteBtn.addEventListener("click", function () {
-                        deleteUser(this.getAttribute("data-id"));
-                    });
-
-                    let buttonContainer = document.createElement("div");
-                    buttonContainer.classList.add("action-buttons");
-                    buttonContainer.style.display = "flex";
-                    buttonContainer.style.gap = "5px";
-                    buttonContainer.appendChild(editBtn);
-                    buttonContainer.appendChild(deleteBtn);
-
-                    actionCell.appendChild(buttonContainer);
-
-                    row.appendChild(idCell);
-                    row.appendChild(nameCell);
-                    row.appendChild(branchCell);
-                    row.appendChild(usernameCell);
-                    row.appendChild(pinCell);
-                    row.appendChild(actionCell);
-
-                    tableBody.appendChild(row);
-                });
-
-                // Hide/show actions column based on branch filter
-                document.getElementById("branchFilter").addEventListener("change", function () {
-    const selectedBranch = this.value.toLowerCase();
-
-    // Fetch data based on the selected branch
-    fetch(`superadmin_accountManagement.php?branch=${selectedBranch}`)
+    // Fetch available branches first
+    fetch("get_branch_user.php")
         .then(response => response.json())
         .then(data => {
-            populateTable(data); // Populate the table with the filtered data
+            if (data.success) {
+                populateBranchDropdown(data.branches);
+            } else {
+                console.error("Error fetching branches:", data.error);
+            }
         })
-        .catch(error => console.error("Error fetching filtered data:", error));
-});
-            }
+        .catch(error => console.error("Error fetching branches:", error));
 
-            // Edit user
-            function editUser(userID) {
-                let usernameCell = document.querySelector(`td[data-username-id='${userID}']`);
-                let currentUsername = usernameCell.textContent;
+    // Initial data load
+    loadUserData("all");
 
-                let pinCell = document.querySelector(`td[data-pin-id='${userID}']`);
-                let currentPin = pinCell.textContent;
+    // Function to populate branch dropdown
+    function populateBranchDropdown(branches) {
+        const branchFilter = document.getElementById("branchFilter");
+        // Clear existing options except "All"
+        branchFilter.innerHTML = '<option value="all">All</option>';
 
-                let branchCell = document.querySelector(`td[data-branch-id='${userID}']`);
-                let currentBranch = branchCell.textContent;
-
-                usernameCell.innerHTML = `<input type="text" value="${currentUsername}" id="editUsername-${userID}">`;
-                pinCell.innerHTML = `<input type="password" value="${currentPin}" id="editPin-${userID}">`;
-                branchCell.innerHTML = `
-                    <select id="editBranch-${userID}">
-                        <option value="dapitan" ${currentBranch === "dapitan" ? "selected" : ""}>Dapitan</option>
-                        <option value="espana" ${currentBranch === "espana" ? "selected" : ""}>Espana</option>
-                        <option value="all" ${currentBranch === "all" ? "selected" : ""}>All</option>
-                    </select>
-                `;
-
-                let saveBtn = document.createElement("button");
-                saveBtn.classList.add("action-btn", "save-btn");
-                saveBtn.textContent = "Save";
-                saveBtn.setAttribute("data-id", userID);
-                saveBtn.addEventListener("click", function () {
-                    saveUser(this.getAttribute("data-id"));
-                });
-
-                let editBtn = document.querySelector(`button[data-id='${userID}']`);
-                editBtn.replaceWith(saveBtn);
-            }
-
-            // Save user
-            function saveUser(userID) {
-                let newUsername = document.getElementById(`editUsername-${userID}`).value;
-                let newPin = document.getElementById(`editPin-${userID}`).value;
-                let newBranch = document.getElementById(`editBranch-${userID}`).value;
-
-                fetch("superadmin_update.php", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: "id=" + encodeURIComponent(userID) + "&username=" + encodeURIComponent(newUsername) + "&pin=" + encodeURIComponent(newPin) + "&branch=" + encodeURIComponent(newBranch)
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        alert(data.message);
-                        if (data.status === "success") {
-                            location.reload();
-                        }
-                    })
-                    .catch(error => console.error("Error updating user:", error));
-            }
-
-            // Delete user
-            function deleteUser(userID) {
-                if (!userID) {
-                    alert("Error: No user ID found.");
-                    return;
-                }
-
-                let confirmRemove = confirm("ARE YOU SURE YOU WANT TO REMOVE THIS USER?");
-                if (!confirmRemove) {
-                    return;
-                } else {
-                    let confirmDelete = confirm("REMOVING THIS USER WILL REQUIRE THEM TO REGISTER AGAIN IF NEEDED. ARE YOU SURE YOU WANT TO PROCEED?");
-                    if (!confirmDelete) {
-                        return;
-                    }
-                }
-
-                fetch("4.1.delete.php", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: "id=" + encodeURIComponent(userID)
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        alert(data.message);
-                        if (data.status === "success") {
-                            location.reload();
-                        }
-                    })
-                    .catch(error => console.error("Error deleting user:", error));
-            }
-
-            // Search functionality
-            document.getElementById("search").addEventListener("input", function () {
-                let searchValue = this.value.toLowerCase();
-                let filteredData = usersData.filter(user =>
-                    user.ID.toString().includes(searchValue) ||
-                    user.name.toLowerCase().includes(searchValue) ||
-                    user.username.toLowerCase().includes(searchValue) ||
-                    user.pin.toLowerCase().includes(searchValue)
-                );
-
-                populateTable(filteredData);
-            });
+        // Add branches from database
+        branches.forEach(branch => {
+            const option = document.createElement("option");
+            option.value = branch.toLowerCase();
+            option.textContent = branch.charAt(0).toUpperCase() + branch.slice(1);
+            branchFilter.appendChild(option);
         });
+
+        // Add event listener to the populated dropdown
+        branchFilter.addEventListener("change", function () {
+            const selectedBranch = this.value.toLowerCase();
+            loadUserData(selectedBranch);
+        });
+    }
+
+    // Function to load user data by branch
+    function loadUserData(branch) {
+        fetch(`superadmin_accountManagement.php?branch=${branch}`)
+            .then(response => response.json())
+            .then(data => {
+                usersData = data;
+                populateTable(usersData);
+            })
+            .catch(error => console.error("Error fetching user data:", error));
+    }
+
+    // Populate table with data
+    function populateTable(data) {
+        let tableBody = document.getElementById("tableBody");
+        tableBody.innerHTML = "";
+
+        data.forEach(user => {
+            let row = document.createElement("tr");
+
+            let idCell = document.createElement("td");
+            idCell.textContent = user.ID;
+
+            let nameCell = document.createElement("td");
+            nameCell.textContent = user.name;
+
+            let branchCell = document.createElement("td");
+            branchCell.textContent = user.branch;
+            branchCell.setAttribute("data-branch-id", user.ID);
+
+            let usernameCell = document.createElement("td");
+            usernameCell.textContent = user.username;
+            usernameCell.setAttribute("data-username-id", user.ID);
+
+            let pinCell = document.createElement("td");
+            pinCell.textContent = user.pin;
+            pinCell.setAttribute("data-pin-id", user.ID);
+
+            let actionCell = document.createElement("td");
+            actionCell.style.textAlign = "center";
+
+            let editBtn = document.createElement("button");
+            editBtn.classList.add("action-btn", "approve-btn");
+            editBtn.innerHTML = `<img src="admin_images/edit.png" alt="Edit" class="icon">`;
+            editBtn.setAttribute("data-id", user.ID);
+            editBtn.addEventListener("click", function () {
+                editUser(this.getAttribute("data-id"));
+            });
+
+            let deleteBtn = document.createElement("button");
+            deleteBtn.classList.add("action-btn", "decline-btn");
+            deleteBtn.innerHTML = `<img src="admin_images/decline.png" alt="Decline" class="icon">`;
+            deleteBtn.setAttribute("data-id", user.ID);
+            deleteBtn.addEventListener("click", function () {
+                deleteUser(this.getAttribute("data-id"));
+            });
+
+            let buttonContainer = document.createElement("div");
+            buttonContainer.classList.add("action-buttons");
+            buttonContainer.style.display = "flex";
+            buttonContainer.style.gap = "5px";
+            buttonContainer.appendChild(editBtn);
+            buttonContainer.appendChild(deleteBtn);
+
+            actionCell.appendChild(buttonContainer);
+
+            row.appendChild(idCell);
+            row.appendChild(nameCell);
+            row.appendChild(branchCell);
+            row.appendChild(usernameCell);
+            row.appendChild(pinCell);
+            row.appendChild(actionCell);
+
+            tableBody.appendChild(row);
+        });
+    }
+
+    // Edit user
+    function editUser(userID) {
+        let usernameCell = document.querySelector(`td[data-username-id='${userID}']`);
+        let currentUsername = usernameCell.textContent;
+
+        let pinCell = document.querySelector(`td[data-pin-id='${userID}']`);
+        let currentPin = pinCell.textContent;
+
+        let branchCell = document.querySelector(`td[data-branch-id='${userID}']`);
+        let currentBranch = branchCell.textContent;
+
+        usernameCell.innerHTML = `<input type="text" value="${currentUsername}" id="editUsername-${userID}">`;
+        pinCell.innerHTML = `<input type="password" value="${currentPin}" id="editPin-${userID}">`;
+
+        // Fetch branches and populate the branch dropdown
+        fetch("get_branch_user.php")
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    branchCell.innerHTML = `
+                        <select id="editBranch-${userID}">
+                            ${data.branches.map(branch => `
+                                <option value="${branch}" ${branch === currentBranch ? "selected" : ""}>
+                                    ${branch}
+                                </option>
+                            `).join("")}
+                        </select>
+                    `;
+                } else {
+                    console.error("Error fetching branches:", data.error);
+                }
+            })
+            .catch(error => console.error("Error fetching branches:", error));
+
+        let saveBtn = document.createElement("button");
+        saveBtn.classList.add("action-btn", "save-btn");
+        saveBtn.textContent = "Save";
+        saveBtn.setAttribute("data-id", userID);
+        saveBtn.addEventListener("click", function () {
+            saveUser(this.getAttribute("data-id"));
+        });
+
+        let editBtn = document.querySelector(`button[data-id='${userID}']`);
+        editBtn.replaceWith(saveBtn);
+    }
+
+    // Save user
+    function saveUser(userID) {
+        let newUsername = document.getElementById(`editUsername-${userID}`).value;
+        let newPin = document.getElementById(`editPin-${userID}`).value;
+        let newBranch = document.getElementById(`editBranch-${userID}`).value;
+
+        fetch("4.1.update.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: "id=" + encodeURIComponent(userID) + "&username=" + encodeURIComponent(newUsername) + "&pin=" + encodeURIComponent(newPin) + "&branch=" + encodeURIComponent(newBranch)
+        })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                if (data.status === "success") {
+                    location.reload();
+                }
+            })
+            .catch(error => console.error("Error updating user:", error));
+    }
+
+    // Delete user
+    function deleteUser(userID) {
+        if (!userID) {
+            alert("Error: No user ID found.");
+            return;
+        }
+
+        let confirmRemove = confirm("ARE YOU SURE YOU WANT TO REMOVE THIS USER?");
+        if (!confirmRemove) {
+            return;
+        } else {
+            let confirmDelete = confirm("REMOVING THIS USER WILL REQUIRE THEM TO REGISTER AGAIN IF NEEDED. ARE YOU SURE YOU WANT TO PROCEED?");
+            if (!confirmDelete) {
+                return;
+            }
+        }
+
+        fetch("4.1.delete.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: "id=" + encodeURIComponent(userID)
+        })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                if (data.status === "success") {
+                    location.reload();
+                }
+            })
+            .catch(error => console.error("Error deleting user:", error));
+    }
+
+    // Search functionality
+    document.getElementById("search").addEventListener("input", function () {
+        let searchValue = this.value.toLowerCase();
+        let filteredData = usersData.filter(user =>
+            user.ID.toString().includes(searchValue) ||
+            user.name.toLowerCase().includes(searchValue) ||
+            user.username.toLowerCase().includes(searchValue) ||
+            user.pin.toLowerCase().includes(searchValue)
+        );
+
+        populateTable(filteredData);
+    });
+});
     </script>
 </body>
 

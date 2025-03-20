@@ -20,22 +20,38 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+// Get branch filter parameter, default to 'all'
 $branch = isset($_GET['branch']) ? strtolower(trim($_GET['branch'])) : 'all';
 
 // Build the SQL query based on the branch filter
-if ($branch === 'dapitan') {
-    $sql = "SELECT *, 'Dapitan' AS branch FROM dapitan_users";
-} elseif ($branch === 'espana') {
-    $sql = "SELECT *, 'Espana' AS branch FROM espana_users";
+if ($branch === 'all') {
+    // When 'all' is selected, fetch all users
+    $sql = "SELECT * FROM cashier_users";
 } else {
-    // Fetch data from both tables if "all" is selected
-    $sql = "SELECT *, 'Dapitan' AS branch FROM dapitan_users
-            UNION
-            SELECT *, 'Espana' AS branch FROM espana_users";
+    // When a specific branch is selected
+    $sql = "SELECT * FROM cashier_users WHERE LOWER(branch) = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $branch);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $users = [];
+    
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $users[] = $row;
+        }
+    }
+    
+    $stmt->close();
+    $conn->close();
+    
+    header('Content-Type: application/json');
+    echo json_encode($users);
+    exit();
 }
 
+// For 'all' option, use direct query
 $result = $conn->query($sql);
-
 $users = [];
 
 if ($result->num_rows > 0) {

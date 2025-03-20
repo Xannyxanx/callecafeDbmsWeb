@@ -10,6 +10,6 @@ header("Pragma: no-cache");
 header("Expires: 0");
 
 
-header("Location: 0.login.html");
+header("Location: ../0.login.html");
 exit();
 ?>

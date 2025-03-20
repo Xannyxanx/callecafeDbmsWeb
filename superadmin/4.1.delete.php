@@ -48,11 +48,8 @@ $userID = intval($_POST['id']);
 error_log("Approving user ID: " . $userID);
 
 
-if ($branch == "Dapitan") {
-    $checkUserQuery = "SELECT * FROM `dapitan_users` WHERE ID = $userID";
-} else {
-    $checkUserQuery = "SELECT * FROM `espana_users` WHERE ID = $userID";
-}
+
+    $checkUserQuery = "SELECT * FROM `cashier_users` WHERE ID = $userID";
 
 $result = $conn->query($checkUserQuery);
 if ($result->num_rows == 0) {
@@ -62,11 +59,8 @@ if ($result->num_rows == 0) {
 }
 
 
-if ($branch == "Dapitan") {
-    $sqlDelete = "DELETE FROM `dapitan_users` WHERE ID = ?";
-} else {
-    $sqlDelete = "DELETE FROM `espana_users` WHERE ID = ?";
-}
+    $sqlDelete = "DELETE FROM `cashier_users` WHERE ID = ?";
+
 
 
 $stmt = $conn->prepare($sqlDelete);
