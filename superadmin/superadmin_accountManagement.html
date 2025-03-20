@@ -76,6 +76,67 @@
 document.addEventListener("DOMContentLoaded", function () {
     let usersData = [];
 
+
+
+
+        
+    document.getElementById("accountManagementLink").addEventListener("click", function (event) {
+                event.preventDefault();
+                showPasswordModal("superadmin_accountManagement.html");
+            });
+
+            document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
+                event.preventDefault();
+                showPasswordModal("superadmin_accountSettings.html");
+                
+            });
+
+            document.getElementById("branchManagementLink").addEventListener("click", function (event) {
+            event.preventDefault();
+            showPasswordModal("superadmin_branchmgmt.html");
+            });
+
+
+            
+            function showPasswordModal(redirectUrl) {
+                const modal = document.getElementById("passwordModal");
+                const closeBtn = document.querySelector(".close");
+                const submitBtn = document.getElementById("passwordSubmit");
+
+                modal.style.display = "block";
+
+                closeBtn.onclick = function () {
+                    modal.style.display = "none";
+                }
+
+                window.onclick = function (event) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                }
+
+                submitBtn.onclick = function () {
+                    const password = document.getElementById("passwordInput").value;
+                    if (password) {
+                        fetch("verify_password.php", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                            body: "password=" + encodeURIComponent(password)
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    window.location.href = redirectUrl;
+                                } else {
+                                    alert("Incorrect password. Please try again.");
+                                }
+                            })
+                            .catch(error => console.error("Error verifying password:", error));
+                    }
+                }
+            }
+
+
     // Fetch available branches first
     fetch("get_branch_user.php")
         .then(response => response.json())

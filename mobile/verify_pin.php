@@ -32,12 +32,8 @@ $pin = $_POST['pin'];
 $cashierName = $_POST['cashierName'];
 $branch = $_POST['branch'];
 
-// Prepare query based on branch
-if ($branch == "Dapitan") {
-    $stmt = $conn->prepare("SELECT * FROM dapitan_users WHERE pin = ? AND name = ?");
-} else {
-    $stmt = $conn->prepare("SELECT * FROM espana_users WHERE pin = ? AND name = ?");
-}
+$stmt = $conn->prepare("SELECT * FROM cashier_users WHERE pin = ? AND name = ?");
+
 
 // Check if statement preparation succeeded
 if (!$stmt) {

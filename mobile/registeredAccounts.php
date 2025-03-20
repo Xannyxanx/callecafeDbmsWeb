@@ -29,16 +29,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
 
-    if ($branch == "Dapitan") {
-        $query = "INSERT INTO dapitan_users_request (name, username, pin) VALUES (?, ?, ?)";
-    } else {
-        $query = "INSERT INTO espana_users_request (name, username, pin) VALUES (?, ?, ?)";
-    }
+    $query = "INSERT INTO cashier_requests (name, username, pin, branch) VALUES (?, ?, ?, ?)";
+ 
     
     $stmt = $conn->prepare($query);
 
     // Bind parameters to the query
-    $stmt->bind_param("sss", $name, $username, $pin);
+    $stmt->bind_param("ssss", $name, $username, $pin, $branch);
 
     // Execute the query and check if it was successful
     if ($stmt->execute()) {

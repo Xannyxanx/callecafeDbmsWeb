@@ -18,7 +18,7 @@
                 <li><a href="superadmin_archive.html">ARCHIVE</a></li>
                 <li><a href="#" id="accountManagementLink">ACCOUNT MANAGEMENT</a></li>
                 <li><a href="#" id="userAccountSettingsLink">SUPER ADMIN SETTINGS</a></li>
-                <li><a href="superadmin_branchmgmt.html">BRANCH MANAGEMENT</a></li>
+                <li><a href="#" id="branchManagementLink">BRANCH MANAGEMENT</a></li>
                 <li><a id="logoutButton">LOGOUT</a></li>
             </ul>
         </nav>
@@ -34,7 +34,7 @@
                 <!-- Dropdown for branch selection -->
                 <div class="dropdown" style="margin-top: 10px;">
                     <select id="branchFilter">
-                        <option value="all">Select branch</option>
+                        <option value="all">All</option>
                     </select>
                 </div>
 
@@ -70,7 +70,111 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+           
+            document.getElementById("accountManagementLink").addEventListener("click", function (event) {
+                event.preventDefault();
+                showPasswordModal("superadmin_accountManagement.html");
+            });
+
+            document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
+                event.preventDefault();
+                showPasswordModal("superadmin_accountSettings.html");
+                
+            });
+
+            document.getElementById("branchManagementLink").addEventListener("click", function (event) {
+            event.preventDefault();
+            showPasswordModal("superadmin_branchmgmt.html");
+            });
+
+
+            
+            function showPasswordModal(redirectUrl) {
+                const modal = document.getElementById("passwordModal");
+                const closeBtn = document.querySelector(".close");
+                const submitBtn = document.getElementById("passwordSubmit");
+
+                modal.style.display = "block";
+
+                closeBtn.onclick = function () {
+                    modal.style.display = "none";
+                }
+
+                window.onclick = function (event) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                }
+
+                submitBtn.onclick = function () {
+                    const password = document.getElementById("passwordInput").value;
+                    if (password) {
+                        fetch("verify_password.php", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                            body: "password=" + encodeURIComponent(password)
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    window.location.href = redirectUrl;
+                                } else {
+                                    alert("Incorrect password. Please try again.");
+                                }
+                            })
+                            .catch(error => console.error("Error verifying password:", error));
+                    }
+                }
+            }
+           
+           
             let requestData = [];
+            
+            fetch("get_branch_user.php")
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                populateBranchDropdown(data.branches);
+            } else {
+                console.error("Error fetching branches:", data.error);
+            }
+        })
+        .catch(error => console.error("Error fetching branches:", error));
+
+    // Initial data load
+    loadRequestData("all");
+
+    // Function to populate branch dropdown
+    function populateBranchDropdown(branches) {
+        const branchFilter = document.getElementById("branchFilter");
+        // Clear existing options except "All"
+        branchFilter.innerHTML = '<option value="all">All</option>';
+
+        // Add branches from database
+        branches.forEach(branch => {
+            const option = document.createElement("option");
+            option.value = branch.toLowerCase();
+            option.textContent = branch.charAt(0).toUpperCase() + branch.slice(1);
+            branchFilter.appendChild(option);
+        });
+
+        // Add event listener to the populated dropdown
+        branchFilter.addEventListener("change", function () {
+            const selectedBranch = this.value.toLowerCase();
+            loadRequestData(selectedBranch);
+        });
+    }
+
+    // Function to load request data by branch
+    function loadRequestData(branch) {
+        fetch(`superadmin_request.php?branch=${branch}`)
+            .then(response => response.json())
+            .then(data => {
+                requestsData = data;
+                populateTable(requestsData);
+            })
+            .catch(error => console.error("Error fetching request data:", error));
+    }
 
             fetch("superadmin_request.php")
                 .then(response => response.json())
@@ -80,76 +184,69 @@
                 })
                 .catch(error => console.error("Error fetching user data:", error));
 
-            function populateTable(data) {
-                let tableBody = document.getElementById("tableBody");
-                tableBody.innerHTML = "";
+                function populateTable(data) {
+        let tableBody = document.getElementById("tableBody");
+        tableBody.innerHTML = "";
 
-                data.forEach(request => {
-                    let row = document.createElement("tr");
+        data.forEach(request => {
+            let row = document.createElement("tr");
 
-                    let idCell = document.createElement("td");
-                    idCell.textContent = request.ID;
+            let idCell = document.createElement("td");
+            idCell.textContent = request.ID;
 
-                    let nameCell = document.createElement("td");
-                    nameCell.textContent = request.name;
+            let nameCell = document.createElement("td");
+            nameCell.textContent = request.name;
 
-                    let branchCell = document.createElement("td");
-                    branchCell.textContent = request.branch;
+            let branchCell = document.createElement("td");
+            branchCell.textContent = request.branch;
+            branchCell.setAttribute("data-branch-id", request.ID);
 
-                    let usernameCell = document.createElement("td");
-                    usernameCell.textContent = request.username;
+            let usernameCell = document.createElement("td");
+            usernameCell.textContent = request.username;
+            usernameCell.setAttribute("data-username-id", request.ID);
 
-                    let pinCell = document.createElement("td");
-                    pinCell.textContent = request.pin;
+            let pinCell = document.createElement("td");
+            pinCell.textContent = request.pin;
+            pinCell.setAttribute("data-pin-id", request.ID);
 
-                    let actionCell = document.createElement("td");
-                    actionCell.style.textAlign = "center";
+            let actionCell = document.createElement("td");
+            actionCell.style.textAlign = "center";
 
-                    let approveBtn = document.createElement("button");
-                    approveBtn.classList.add("action-btn", "approve-btn");
-                    approveBtn.innerHTML = `<img src="images/approve.png" alt="Approve" class="icon">`;
-                    approveBtn.setAttribute("data-id", request.ID);
-                    approveBtn.addEventListener("click", function () {
-                        approveRequest(this.getAttribute("data-id"));
-                    });
+            let approveBtn = document.createElement("button");
+            approveBtn.classList.add("action-btn", "approve-btn");
+            approveBtn.innerHTML = `<img src="admin_images/approve.png" alt="Approve" class="icon">`;
+            approveBtn.setAttribute("data-id", request.ID);
+            approveBtn.addEventListener("click", function () {
+                approveRequest(this.getAttribute("data-id"));
+            });
 
-                    let declineBtn = document.createElement("button");
-                    declineBtn.classList.add("action-btn", "decline-btn");
-                    declineBtn.innerHTML = `<img src="images/decline.png" alt="Decline" class="icon">`;
-                    declineBtn.setAttribute("data-id", request.ID);
-                    declineBtn.addEventListener("click", function () {
-                        declineRequest(this.getAttribute("data-id"));
-                    });
+            let declineBtn = document.createElement("button");
+            declineBtn.classList.add("action-btn", "decline-btn");
+            declineBtn.innerHTML = `<img src="admin_images/decline.png" alt="Decline" class="icon">`;
+            declineBtn.setAttribute("data-id", request.ID);
+            declineBtn.addEventListener("click", function () {
+                declineRequest(this.getAttribute("data-id"));
+            });
 
-                    let buttonContainer = document.createElement("div");
-                    buttonContainer.classList.add("action-buttons");
-                    buttonContainer.style.display = "flex";
-                    buttonContainer.style.gap = "5px";
-                    buttonContainer.appendChild(approveBtn);
-                    buttonContainer.appendChild(declineBtn);
+            let buttonContainer = document.createElement("div");
+            buttonContainer.classList.add("action-buttons");
+            buttonContainer.style.display = "flex";
+            buttonContainer.style.gap = "5px";
+            buttonContainer.appendChild(approveBtn);
+            buttonContainer.appendChild(declineBtn);
 
-                    actionCell.appendChild(buttonContainer);
+            actionCell.appendChild(buttonContainer);
 
-                    row.appendChild(idCell);
-                    row.appendChild(nameCell);
-                    row.appendChild(branchCell);
-                    row.appendChild(usernameCell);
-                    row.appendChild(pinCell);
-                    row.appendChild(actionCell);
+            row.appendChild(idCell);
+            row.appendChild(nameCell);
+            row.appendChild(branchCell);
+            row.appendChild(usernameCell);
+            row.appendChild(pinCell);
+            row.appendChild(actionCell);
 
-                    tableBody.appendChild(row);
-                });
-
-                // Hide/show actions column based on branch filter
-                const branchFilter = document.getElementById("branchFilter");
-                const actionCells = document.querySelectorAll("td:nth-child(6)");
-                branchFilter.addEventListener("change", function () {
-                    const selectedBranch = this.value;
-                    actionCells.forEach(cell => {
-                        cell.style.display = selectedBranch === "all" ? "table-cell" : "none";
-                    });
-                });
-            }
+            tableBody.appendChild(row);
+        });
+    }
 
             // Search functionality
             document.getElementById("search").addEventListener("input", function () {

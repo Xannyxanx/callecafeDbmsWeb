@@ -40,11 +40,8 @@ if (!isset($_POST['id']) || empty($_POST['id'])) {
 $requestID = intval($_POST['id']);
 error_log("Approving Request ID: " . $requestID);
 
-if ($branch == "Dapitan") {
-    $checkUserQuery = "SELECT * FROM `dapitan_users_request` WHERE ID = $requestID";
-} else {
-    $checkUserQuery = "SELECT * FROM `espana_users_request` WHERE ID = $requestID";
-}
+    $checkUserQuery = "SELECT * FROM `cashier_requests` WHERE ID = $requestID";
+
 
 $result = $conn->query($checkUserQuery);
 if ($result->num_rows == 0) {
@@ -53,11 +50,8 @@ if ($result->num_rows == 0) {
     exit();
 }
 
-if ($branch == "Dapitan") {
-    $sqlDelete = "DELETE FROM `dapitan_users_request` WHERE ID = ?";
-} else {
-    $sqlDelete = "DELETE FROM `espana_users_request` WHERE ID = ?";
-}
+    $sqlDelete = "DELETE FROM `cashier_requests` WHERE ID = ?";
+
 
 $stmt = $conn->prepare($sqlDelete);
 $stmt->bind_param("i", $requestID);

@@ -31,12 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
 
-    // Determine the table based on the branch
-    if ($branch == "Dapitan") {
-        $table = "dapitan_users";
-    } else {
-        $table = "espana_users";
-    }
+    // Using a single table with a branch column instead of separate tables
+    $table = "cashier_users"; // This is now your unified table
 
     // Build the query based on the fields to update
     $query = "UPDATE $table SET ";
@@ -57,9 +53,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Remove the trailing comma and space
     $query = rtrim($query, ", ");
-    $query .= " WHERE name = ?";
+    
+    // Add WHERE clause to match both name and branch
+    $query .= " WHERE name = ? AND branch = ?";
     $params[] = $cashierName;
-    $types .= "s";
+    $params[] = $branch;
+    $types .= "ss";
 
     $stmt = $conn->prepare($query);
 
@@ -68,11 +67,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Execute the query and check if it was successful
     if ($stmt->execute()) {
-        echo json_encode(["success" => true, "message" => "Data updated successfully."]);
+        if ($stmt->affected_rows > 0) {
+            echo json_encode(["success" => true, "message" => "User data updated successfully."]);
+            file_put_contents('sql.log', $query); 
+        } else {
+            echo json_encode(["success" => false, "message" => "No records were updated. User may not exist at the specified branch."]);
+            file_put_contents('sql.log', $query); 
+        }
     } else {
-        echo json_encode(["success" => false, "message" => "Failed to update data."]);
+        echo json_encode(["success" => false, "message" => "Failed to update data: " . $conn->error]);
+        file_put_contents('sql.log', $query); 
     }
-
+    file_put_contents('sql.log', $query); 
     // Close the statement and the database connection
     $stmt->close();
     $conn->close();
@@ -81,4 +87,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // If the request is not POST, return an error
     echo json_encode(["error" => "Invalid request method. Only POST is allowed."]);
 }
+
+
 ?>

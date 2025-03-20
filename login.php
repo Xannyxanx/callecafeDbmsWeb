@@ -29,35 +29,7 @@ if (empty($inputPin)) {
 
 // Prepare and execute the query
 try {
-    $stmt = $pdo->prepare("SELECT * FROM dapitan_users WHERE pin = :pin && username = :username");
-    $stmt->execute(['pin' => $inputPin, 'username' => $username]);
-
-    $account = $stmt->fetch(PDO::FETCH_ASSOC); 
-
-    if ($account) {
-        // Successful sign-in
-        $payload = [
-            'user_id' => $account['ID'],
-            'branch' => "Dapitan",
-            'username' => $account['username'],
-            'name' => $account['name'],
-            'exp' => time() + 120 // Token expires in 2 minutes
-        ];
-        $jwt = JWT::encode($payload, $secretKey, 'HS256');
-
-        echo json_encode([
-            'success' => true,
-            'message' => 'Sign-in successful',
-            'token' => $jwt,
-            'user' => [
-                'username' => $account['username'],
-                'branch' => "Dapitan",
-                'name' => $account['name']
-            ]
-        ]);
-    } else {
-        // If not found in dapitan_users, check espana_users
-        $stmt = $pdo->prepare("SELECT * FROM espana_users WHERE pin = :pin && username = :username");
+        $stmt = $pdo->prepare("SELECT * FROM cashier_users WHERE pin = :pin && username = :username");
         $stmt->execute(['pin' => $inputPin, 'username' => $username]);
 
         $account = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -66,7 +38,7 @@ try {
             // Successful sign-in from espana_users
             $payload = [
                 'user_id' => $account['ID'],
-                'branch' => "Espana",
+                'branch' => $account['branch'],
                 'name' => $account['name'],
                 'exp' => time() + 120
             ];
@@ -78,7 +50,7 @@ try {
                 'token' => $jwt,
                 'user' => [
                     'username' => $account['username'],
-                    'branch' => "Espana",
+                    'branch' => $account['branch'],
                     'name' => $account['name']
                 ]
             ]);
@@ -89,7 +61,6 @@ try {
                 'message' => 'Invalid PIN'
             ]);
         }
-    }
 } catch (Exception $e) {
     echo json_encode([
         'success' => false,
