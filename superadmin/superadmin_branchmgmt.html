@@ -9,7 +9,7 @@
 
 <style>
     /* Modal Styles */
-    .modal {
+    .modal-ub {
         display: none;
         position: fixed;
         z-index: 1;
@@ -21,7 +21,7 @@
         background-color: rgba(0, 0, 0, 0.5);
     }
 
-    .modal-content {
+    .modal-content-ub {
         background-color: #fefefe;
         margin: 10% auto;
         padding: 20px;
@@ -44,23 +44,24 @@
         color: #000;
     }
 
-    .modal-header {
+    .modal-header-ub {
         padding: 10px 0;
         border-bottom: 1px solid #ddd;
         margin-bottom: 20px;
     }
 
-    .modal-header h3 {
+    .modal-header-ub h3 {
         margin: 0;
         font-size: 24px;
+        color: black;
     }
 
-    .modal-body {
+    .modal-body-ub {
         margin-bottom: 20px;
     }
 
     .modal-body input {
-        width: 100%;
+        width: 90%;
         padding: 10px;
         margin-bottom: 15px;
         border: 1px solid #cccccc;
@@ -69,7 +70,7 @@
     }
 
     .modal-footer {
-        text-align: right;
+        text-align: center;
     }
 
     .modal-footer button {
@@ -80,6 +81,7 @@
         border-radius: 5px;
         cursor: pointer;
         font-size: 16px;
+
     }
 
     .modal-footer button:hover {
@@ -132,24 +134,26 @@
                 <h3 style="text-align: center;">Current Branch</h3>
                 <div style="display: flex; align-items: left;">
                     <p style="padding-right: 27px;"><strong>Select Branch:</strong></p>
-                    <select id="branchSelect" onchange="handleBranchChange()" style="margin-left: 20px;">
+                    <select id="branchSelect" onchange="handleBranchChange()" style="margin-left: 20px; width: 50%;">
                         <option value="">Select a branch</option>
                     </select>
                 </div>
                 <div style="display: flex; align-items: left; margin-top: 10px;">
                     <p style="padding-right: 27px;"><strong>Select User:</strong></p>
-                    <select id="userSelect" onchange="handleUserChange()" style="margin-left: 20px;">
+                    <select id="userSelect" onchange="handleUserChange()" style="margin-left: 37px; width: 50%;">
                         <option value="">Select a user</option>
                     </select>
                 </div>
             </div>
-            
+
             <!-- UPDATE BRANCH ACCOUNT -->
             <div class="account-settings-user-info" style="text-align: center;">
                 <h3 style="text-align: center;">Update Branch Account</h3>
                 <form class="account-settings-form" onsubmit="event.preventDefault(); updateBranch();">
                     <!-- Text field for new branch -->
-                    <input type="text" id="newBranch" placeholder="Enter New Branch">
+                    <select id="newBranch" style="margin-left: 20px; width: 50%;">
+                        <option value="">Select a new branch</option>
+                    </select>
                     <input type="text" id="name" placeholder="Enter New Name">
                     <input type="email" id="email" placeholder="Enter New Email">
                     <input type="password" id="password" placeholder="Enter New Password">
@@ -159,11 +163,12 @@
             </div>
 
             <!-- UPDATE GLOBAL DISCOUNT -->
-            <div class="account-settings-user-info">
-                <h3 style="text-align: center;">Update Global Discount</h3>
+            <div class="account-settings-user-info" style="text-align: center;">
+                <h3>Update Global Discount</h3>
                 <form class="account-settings-form" onsubmit="event.preventDefault(); updateDiscount();">
                     <input type="number" id="pwdDiscount" placeholder="PWD Discount (%)" min="0" max="100">
-                    <input type="number" id="seniorDiscount" placeholder="Senior Citizen Discount (%)" min="0" max="100">
+                    <input type="number" id="seniorDiscount" placeholder="Senior Citizen Discount (%)" min="0"
+                        max="100">
                     <input type="number" id="othersDiscount" placeholder="Others Discount (%)" min="0" max="100">
                     <button type="submit">Apply</button>
                 </form>
@@ -175,20 +180,19 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Enter Password</h2>
-            <input type="password" id="passwordInput" placeholder="Enter your password">
-            <button id="passwordSubmit">Submit</button>
+            <input class="modal-password-input" type="password" id="passwordInput" placeholder="Enter your password">
+            <button class="modal-password-btn" id="passwordSubmit">Submit</button>
         </div>
     </div>
-
 
     <button class="add-branch-button" onclick="openModal()">Add New Branch</button>
 
     <!-- Add New Branch Modal -->
-    <div id="addBranchModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
+    <div id="addBranchModal" class="modal-ub">
+        <div class="modal-content-ub">
+            <div class="modal-header-ub">
                 <span class="close" onclick="closeModal()">&times;</span>
-                <h3>Add New Branch</h3>
+                <h3 style="text-align: center;">Add New Branch</h3>
             </div>
             <div class="modal-body">
                 <input type="text" id="branchName" placeholder="Branch Name">
@@ -214,23 +218,23 @@
 
 
         document.getElementById("accountManagementLink").addEventListener("click", function (event) {
-                event.preventDefault();
-                showPasswordModal("superadmin_accountManagement.html");
-            });
+            event.preventDefault();
+            showPasswordModal("superadmin_accountManagement.html");
+        });
 
-            document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
-                event.preventDefault();
-                showPasswordModal("superadmin_accountSettings.html");
-                
-            });
+        document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
+            event.preventDefault();
+            showPasswordModal("superadmin_accountSettings.html");
 
-            document.getElementById("branchManagementLink").addEventListener("click", function (event) {
+        });
+
+        document.getElementById("branchManagementLink").addEventListener("click", function (event) {
             event.preventDefault();
             showPasswordModal("superadmin_branchmgmt.html");
-            });
+        });
 
 
-            function openModal() {
+        function openModal() {
             document.getElementById("addBranchModal").style.display = "block";
         }
 
@@ -274,7 +278,7 @@
                         alert(data.message);
                         closeModal();
                         window.location.reload();
-                        
+
                     } else {
                         alert(data.error || "Failed to add new branch.");
                     }
@@ -285,31 +289,31 @@
                 });
         }
 
-            function showPasswordModal(redirectUrl) {
-                const modal = document.getElementById("passwordModal");
-                const closeBtn = document.querySelector(".close");
-                const submitBtn = document.getElementById("passwordSubmit");
+        function showPasswordModal(redirectUrl) {
+            const modal = document.getElementById("passwordModal");
+            const closeBtn = document.querySelector(".close");
+            const submitBtn = document.getElementById("passwordSubmit");
 
-                modal.style.display = "block";
+            modal.style.display = "block";
 
-                closeBtn.onclick = function() {
+            closeBtn.onclick = function () {
+                modal.style.display = "none";
+            }
+
+            window.onclick = function (event) {
+                if (event.target == modal) {
                     modal.style.display = "none";
                 }
+            }
 
-                window.onclick = function(event) {
-                    if (event.target == modal) {
-                        modal.style.display = "none";
-                    }
-                }
-
-                submitBtn.onclick = function() {
-                    const password = document.getElementById("passwordInput").value;
-                    if (password) {
-                        fetch("verify_password.php", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                            body: "password=" + encodeURIComponent(password)
-                        })
+            submitBtn.onclick = function () {
+                const password = document.getElementById("passwordInput").value;
+                if (password) {
+                    fetch("verify_password.php", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: "password=" + encodeURIComponent(password)
+                    })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
@@ -319,273 +323,301 @@
                             }
                         })
                         .catch(error => console.error("Error verifying password:", error));
-                    }
                 }
             }
+        }
 
 
         function fetchCurrentDiscounts() {
-    fetch("get_discounts.php")
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Set the current values as placeholders in the input fields
-                data.discounts.forEach(discount => {
-                    if (discount.category === "PWD") {
-                        document.getElementById("pwdDiscount").placeholder = `PWD Discount (${discount.percentage}%)`;
-                    } else if (discount.category === "Senior Citizen") {
-                        document.getElementById("seniorDiscount").placeholder = `Senior Citizen Discount (${discount.percentage}%)`;
-                    } else if (discount.category === "Others") {
-                        document.getElementById("othersDiscount").placeholder = `Others Discount (${discount.percentage}%)`;
+            fetch("get_discounts.php")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Set the current values as placeholders in the input fields
+                        data.discounts.forEach(discount => {
+                            if (discount.category === "PWD") {
+                                document.getElementById("pwdDiscount").placeholder = `PWD Discount (${discount.percentage}%)`;
+                            } else if (discount.category === "Senior Citizen") {
+                                document.getElementById("seniorDiscount").placeholder = `Senior Citizen Discount (${discount.percentage}%)`;
+                            } else if (discount.category === "Others") {
+                                document.getElementById("othersDiscount").placeholder = `Others Discount (${discount.percentage}%)`;
+                            }
+                        });
+                    } else {
+                        console.error("Error fetching discounts:", data.error);
                     }
-                });
-            } else {
-                console.error("Error fetching discounts:", data.error);
-            }
-        })
-        .catch(error => console.error("Error fetching discounts:", error));
-}
-        
+                })
+                .catch(error => console.error("Error fetching discounts:", error));
+        }
+
 
         function fetchBranches() {
-    fetch("get_branch_user.php")
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const branchSelect = document.getElementById("branchSelect");
-                const newBranchSelect = document.getElementById("newBranch");
-                branchSelect.innerHTML = "<option value=''>Select a branch</option>";
-                newBranchSelect.innerHTML = "<option value=''>Select a new branch</option>";
+            fetch("get_branch_user.php")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const branchSelect = document.getElementById("branchSelect");
+                        const newBranchSelect = document.getElementById("newBranch");
+                        branchSelect.innerHTML = "<option value=''>Select a branch</option>";
+                        newBranchSelect.innerHTML = "<option value=''>Select a new branch</option>";
 
-                data.branches.forEach(branch => {
-                    const option = document.createElement("option");
-                    option.value = branch.toLowerCase();
-                    option.textContent = branch;
-                    branchSelect.appendChild(option.cloneNode(true)); // Clone for the new branch dropdown
-                    newBranchSelect.appendChild(option);
-                });
+                        data.branches.forEach(branch => {
+                            const option = document.createElement("option");
+                            option.value = branch.toLowerCase();
+                            option.textContent = branch;
+                            branchSelect.appendChild(option.cloneNode(true)); // Clone for the new branch dropdown
+                            newBranchSelect.appendChild(option);
+                        });
 
-                // Automatically select the current logged-in branch
-                if (data.currentBranch) {
-                    branchSelect.value = data.currentBranch.toLowerCase();
-                    handleBranchChange(); // Fetch and display branch details
-                }
-            } else {
-                alert("Error fetching branches: " + data.error);
-            }
-        })
-        .catch(error => console.error("Error fetching branches:", error));
-}
+                        // Automatically select the current logged-in branch
+                        if (data.currentBranch) {
+                            branchSelect.value = data.currentBranch.toLowerCase();
+                            handleBranchChange(); // Fetch and display branch details
+                        }
+                    } else {
+                        alert("Error fetching branches: " + data.error);
+                    }
+                })
+                .catch(error => console.error("Error fetching branches:", error));
+        }
 
-// Handle branch selection change
-function handleBranchChange() {
-    const branch = document.getElementById("branchSelect").value;
+        // Handle branch selection change
+        function handleBranchChange() {
+            const branch = document.getElementById("branchSelect").value;
 
-    if (!branch) {
-        document.getElementById("userSelect").innerHTML = "<option value=''>Select a user</option>";
-        document.getElementById("name").value = "";
-        document.getElementById("email").value = "";
-        return;
-    }
-
-    // Fetch users in the selected branch
-    fetch(`get_branch_user.php?branch=${branch}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const userSelect = document.getElementById("userSelect");
-                userSelect.innerHTML = "<option value=''>Select a user</option>";
-                data.users.forEach(user => {
-                    const option = document.createElement("option");
-                    option.value = user.id;
-                    option.textContent = user.name;
-                    userSelect.appendChild(option);
-                });
-            } else {
-                alert(data.error);
+            if (!branch) {
                 document.getElementById("userSelect").innerHTML = "<option value=''>Select a user</option>";
                 document.getElementById("name").value = "";
                 document.getElementById("email").value = "";
+                return;
             }
-        })
-        .catch(error => console.error("Error fetching branch users:", error));
-}
 
-// Handle user selection change
-function handleUserChange() {
-    const userId = document.getElementById("userSelect").value;
+            // Fetch users in the selected branch
+            fetch(`get_branch_user.php?branch=${branch}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const userSelect = document.getElementById("userSelect");
+                        userSelect.innerHTML = "<option value=''>Select a user</option>";
+                        data.users.forEach(user => {
+                            const option = document.createElement("option");
+                            option.value = user.id;
+                            option.textContent = user.name;
+                            userSelect.appendChild(option);
+                        });
+                    } else {
+                        alert(data.error);
+                        document.getElementById("userSelect").innerHTML = "<option value=''>Select a user</option>";
+                        document.getElementById("name").value = "";
+                        document.getElementById("email").value = "";
+                    }
+                })
+                .catch(error => console.error("Error fetching branch users:", error));
+        }
 
-    if (!userId) {
-        document.getElementById("name").value = "";
-        document.getElementById("email").value = "";
-        document.getElementById("newBranch").value = "";
-        return;
-    }
+        // Handle user selection change
+        function handleUserChange() {
+            const userId = document.getElementById("userSelect").value;
 
-    // Fetch user details
-    fetch(`get_user_details.php?userId=${userId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById("name").value = data.user.name;
-                document.getElementById("email").value = data.user.email;
-                // Auto-fill the new branch field with the current branch
-                document.getElementById("newBranch").value = data.user.branch;
-            } else {
-                alert(data.error);
+            if (!userId) {
                 document.getElementById("name").value = "";
                 document.getElementById("email").value = "";
                 document.getElementById("newBranch").value = "";
+                return;
             }
-        })
-        .catch(error => console.error("Error fetching user details:", error));
-}
 
-// Update branch account
-function updateBranch() {
-    const branch = document.getElementById("branchSelect").value;
-    const userId = document.getElementById("userSelect").value;
-    const newBranch = document.getElementById("newBranch").value.trim();
-    const name = document.getElementById("name").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
-    const confirmPassword = document.getElementById("confirmPassword").value.trim();
-
-    if (!branch || !userId) {
-        alert("Please select a branch and a user.");
-        return;
-    }
-
-    // Check if passwords match before submitting
-    if (password && password !== confirmPassword) {
-        alert("Passwords do not match.");
-        return;
-    }
-
-    const branchData = {
-        branch,
-        userId,
-        newBranch,
-        name,
-        email,
-        password,
-        confirmPassword // Include the confirmPassword in the request
-    };
-
-    // Debug: Log the request payload
-    console.log("Sending data:", JSON.stringify(branchData));
-
-    fetch("updating_branch.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(branchData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            // Clear the form fields
-            document.getElementById("name").value = "";
-            document.getElementById("email").value = "";
-            document.getElementById("password").value = "";
-            document.getElementById("confirmPassword").value = "";
-            document.getElementById("newBranch").value = "";
-            window.location.reload(); // Refresh the page
-        } else {
-            alert(data.error || "Update failed.");
+            // Fetch user details
+            fetch(`get_user_details.php?userId=${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById("name").value = data.user.name;
+                        document.getElementById("email").value = data.user.email;
+                        // Auto-fill the new branch field with the current branch
+                        document.getElementById("newBranch").value = data.user.branch;
+                    } else {
+                        alert(data.error);
+                        document.getElementById("name").value = "";
+                        document.getElementById("email").value = "";
+                        document.getElementById("newBranch").value = "";
+                    }
+                })
+                .catch(error => console.error("Error fetching user details:", error));
         }
-    })
-    .catch(error => {
-        console.error("Error updating branch:", error);
-        alert("An error occurred while updating the branch.");
-    });
-}
+
+        // Update branch account
+        function updateBranch() {
+            const branch = document.getElementById("branchSelect").value;
+            const userId = document.getElementById("userSelect").value;
+            const newBranch = document.getElementById("newBranch").value.trim();
+            const name = document.getElementById("name").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const confirmPassword = document.getElementById("confirmPassword").value.trim();
+
+            if (!branch || !userId) {
+                alert("Please select a branch and a user.");
+                return;
+            }
+
+            // Check if passwords match before submitting
+            if (password && password !== confirmPassword) {
+                alert("Passwords do not match.");
+                return;
+            }
+
+            const branchData = {
+                branch,
+                userId,
+                newBranch,
+                name,
+                email,
+                password,
+                confirmPassword // Include the confirmPassword in the request
+            };
+
+            // Debug: Log the request payload
+            console.log("Sending data:", JSON.stringify(branchData));
+
+            fetch("updating_branch.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(branchData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        // Clear the form fields
+                        document.getElementById("name").value = "";
+                        document.getElementById("email").value = "";
+                        document.getElementById("password").value = "";
+                        document.getElementById("confirmPassword").value = "";
+                        document.getElementById("newBranch").value = "";
+                        window.location.reload(); // Refresh the page
+                    } else {
+                        alert(data.error || "Update failed.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error updating branch:", error);
+                    alert("An error occurred while updating the branch.");
+                });
+        }
         // Update global discount
         function updateDiscount() {
-    const pwdDiscount = document.getElementById("pwdDiscount").value;
-    const seniorDiscount = document.getElementById("seniorDiscount").value;
-    const othersDiscount = document.getElementById("othersDiscount").value;
+            const pwdDiscount = document.getElementById("pwdDiscount").value;
+            const seniorDiscount = document.getElementById("seniorDiscount").value;
+            const othersDiscount = document.getElementById("othersDiscount").value;
 
-    // Validate the inputs
-    if (pwdDiscount === "" && seniorDiscount === "" && othersDiscount === "") {
-        alert("Please enter at least one discount value to update.");
-        return;
-    }
+            // Validate the inputs
+            if (pwdDiscount === "" && seniorDiscount === "" && othersDiscount === "") {
+                alert("Please enter at least one discount value to update.");
+                return;
+            }
 
-    // Create an array to hold the discount updates
-    const discountUpdates = [];
+            // Create an array to hold the discount updates
+            const discountUpdates = [];
 
-    if (pwdDiscount !== "") {
-        if (isNaN(pwdDiscount) || pwdDiscount < 0 || pwdDiscount > 100) {
-            alert("PWD discount must be a number between 0 and 100.");
-            return;
+            if (pwdDiscount !== "") {
+                if (isNaN(pwdDiscount) || pwdDiscount < 0 || pwdDiscount > 100) {
+                    alert("PWD discount must be a number between 0 and 100.");
+                    return;
+                }
+                discountUpdates.push({
+                    category: "PWD",
+                    percentage: parseFloat(pwdDiscount)
+                });
+            }
+
+            if (seniorDiscount !== "") {
+                if (isNaN(seniorDiscount) || seniorDiscount < 0 || seniorDiscount > 100) {
+                    alert("Senior Citizen discount must be a number between 0 and 100.");
+                    return;
+                }
+                discountUpdates.push({
+                    category: "Senior Citizen",
+                    percentage: parseFloat(seniorDiscount)
+                });
+            }
+
+            if (othersDiscount !== "") {
+                if (isNaN(othersDiscount) || othersDiscount < 0 || othersDiscount > 100) {
+                    alert("Others discount must be a number between 0 and 100.");
+                    return;
+                }
+                discountUpdates.push({
+                    category: "Others",
+                    percentage: parseFloat(othersDiscount)
+                });
+            }
+
+            const discountData = {
+                action: "updateDiscounts",
+                discounts: discountUpdates
+            };
+
+            // Debug: Log the request payload
+            console.log("Sending discount data:", JSON.stringify(discountData));
+
+            fetch("updating_branch.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(discountData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        // Clear the form fields
+                        document.getElementById("pwdDiscount").value = "";
+                        document.getElementById("seniorDiscount").value = "";
+                        document.getElementById("othersDiscount").value = "";
+
+                        // Refresh the page to show updated values
+                        window.location.reload();
+                    } else {
+                        alert(data.error || "Update failed.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error updating discounts:", error);
+                    alert("An error occurred while updating the discount values.");
+                });
         }
-        discountUpdates.push({
-            category: "PWD",
-            percentage: parseFloat(pwdDiscount)
-        });
-    }
-
-    if (seniorDiscount !== "") {
-        if (isNaN(seniorDiscount) || seniorDiscount < 0 || seniorDiscount > 100) {
-            alert("Senior Citizen discount must be a number between 0 and 100.");
-            return;
-        }
-        discountUpdates.push({
-            category: "Senior Citizen",
-            percentage: parseFloat(seniorDiscount)
-        });
-    }
-
-    if (othersDiscount !== "") {
-        if (isNaN(othersDiscount) || othersDiscount < 0 || othersDiscount > 100) {
-            alert("Others discount must be a number between 0 and 100.");
-            return;
-        }
-        discountUpdates.push({
-            category: "Others",
-            percentage: parseFloat(othersDiscount)
-        });
-    }
-
-    const discountData = {
-        action: "updateDiscounts",
-        discounts: discountUpdates
-    };
-
-    // Debug: Log the request payload
-    console.log("Sending discount data:", JSON.stringify(discountData));
-
-    fetch("updating_branch.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(discountData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            // Clear the form fields
-            document.getElementById("pwdDiscount").value = "";
-            document.getElementById("seniorDiscount").value = "";
-            document.getElementById("othersDiscount").value = "";
-            
-            // Refresh the page to show updated values
-            window.location.reload();
-        } else {
-            alert(data.error || "Update failed.");
-        }
-    })
-    .catch(error => {
-        console.error("Error updating discounts:", error);
-        alert("An error occurred while updating the discount values.");
-    });
-}
 
         // Logout
         document.getElementById("logoutButton").addEventListener("click", function () {
             window.location.href = "logout.php";
         });
+
+        function fetchAvailableBranches() {
+            fetch("get_available_branches.php")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const branchSelect = document.getElementById("branchSelect");
+                        const newBranchSelect = document.getElementById("newBranch");
+
+                        branchSelect.innerHTML = "<option value=''>Select a branch</option>";
+                        newBranchSelect.innerHTML = "<option value=''>Select a new branch</option>";
+
+                        data.branches.forEach(branch => {
+                            const option = document.createElement("option");
+                            option.value = branch;
+                            option.textContent = branch;
+                            branchSelect.appendChild(option.cloneNode(true)); // Clone for the new branch dropdown
+                            newBranchSelect.appendChild(option);
+                        });
+                    } else {
+                        alert("Error fetching branches: " + data.error);
+                    }
+                })
+                .catch(error => console.error("Error fetching branches:", error));
+        }
+
+        // Call the function to populate the dropdowns on page load
+        document.addEventListener("DOMContentLoaded", fetchAvailableBranches);
     </script>
 </body>
 

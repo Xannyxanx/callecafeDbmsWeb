@@ -26,7 +26,7 @@
         <!-- MAIN CONTENT -->
         <main>
             <h2>User Requests</h2>
-            <form class="archive-form" action="#" method="get">
+            <form class="archive-form" action="#" method="get" style="margin-right: 5%;">
                 <a href="superadmin_accountManagement.html" style="text-decoration: none;">
                     <button type="button" id="currentBtn" class="requests-btn">REGISTERED USERS</button>
                 </a>
@@ -44,13 +44,13 @@
             <!-- TABLE -->
             <div>
                 <h3>Requests List</h3>
-                <table border="1" width="100%">
+                <table border="0.5" width="100%">
                     <tr>
                         <th style="width: 10%;">ID</th>
                         <th>NAME</th>
-                        <th>BRANCH</th>
+                        <th style="width: 10%;">BRANCH</th>
                         <th>USERNAME</th>
-                        <th style="width: 25%;">PIN</th>
+                        <th style="width: 15%;">PIN</th>
                         <th style="width: 15%;">Actions</th>
                     </tr>
                     <tbody id="tableBody"></tbody>
@@ -63,14 +63,14 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Enter Password</h2>
-            <input type="password" id="passwordInput" placeholder="Enter your password">
-            <button id="passwordSubmit">Submit</button>
+            <input class="modal-password-input" type="password" id="passwordInput" placeholder="Enter your password">
+            <button class="modal-password-btn" id="passwordSubmit">Submit</button>
         </div>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-           
+
             document.getElementById("accountManagementLink").addEventListener("click", function (event) {
                 event.preventDefault();
                 showPasswordModal("superadmin_accountManagement.html");
@@ -79,16 +79,16 @@
             document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
                 event.preventDefault();
                 showPasswordModal("superadmin_accountSettings.html");
-                
+
             });
 
             document.getElementById("branchManagementLink").addEventListener("click", function (event) {
-            event.preventDefault();
-            showPasswordModal("superadmin_branchmgmt.html");
+                event.preventDefault();
+                showPasswordModal("superadmin_branchmgmt.html");
             });
 
 
-            
+
             function showPasswordModal(redirectUrl) {
                 const modal = document.getElementById("passwordModal");
                 const closeBtn = document.querySelector(".close");
@@ -126,55 +126,55 @@
                     }
                 }
             }
-           
-           
+
+
             let requestData = [];
-            
+
             fetch("get_branch_user.php")
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                populateBranchDropdown(data.branches);
-            } else {
-                console.error("Error fetching branches:", data.error);
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        populateBranchDropdown(data.branches);
+                    } else {
+                        console.error("Error fetching branches:", data.error);
+                    }
+                })
+                .catch(error => console.error("Error fetching branches:", error));
+
+            // Initial data load
+            loadRequestData("all");
+
+            // Function to populate branch dropdown
+            function populateBranchDropdown(branches) {
+                const branchFilter = document.getElementById("branchFilter");
+                // Clear existing options except "All"
+                branchFilter.innerHTML = '<option value="all">All</option>';
+
+                // Add branches from database
+                branches.forEach(branch => {
+                    const option = document.createElement("option");
+                    option.value = branch.toLowerCase();
+                    option.textContent = branch.charAt(0).toUpperCase() + branch.slice(1);
+                    branchFilter.appendChild(option);
+                });
+
+                // Add event listener to the populated dropdown
+                branchFilter.addEventListener("change", function () {
+                    const selectedBranch = this.value.toLowerCase();
+                    loadRequestData(selectedBranch);
+                });
             }
-        })
-        .catch(error => console.error("Error fetching branches:", error));
 
-    // Initial data load
-    loadRequestData("all");
-
-    // Function to populate branch dropdown
-    function populateBranchDropdown(branches) {
-        const branchFilter = document.getElementById("branchFilter");
-        // Clear existing options except "All"
-        branchFilter.innerHTML = '<option value="all">All</option>';
-
-        // Add branches from database
-        branches.forEach(branch => {
-            const option = document.createElement("option");
-            option.value = branch.toLowerCase();
-            option.textContent = branch.charAt(0).toUpperCase() + branch.slice(1);
-            branchFilter.appendChild(option);
-        });
-
-        // Add event listener to the populated dropdown
-        branchFilter.addEventListener("change", function () {
-            const selectedBranch = this.value.toLowerCase();
-            loadRequestData(selectedBranch);
-        });
-    }
-
-    // Function to load request data by branch
-    function loadRequestData(branch) {
-        fetch(`superadmin_request.php?branch=${branch}`)
-            .then(response => response.json())
-            .then(data => {
-                requestsData = data;
-                populateTable(requestsData);
-            })
-            .catch(error => console.error("Error fetching request data:", error));
-    }
+            // Function to load request data by branch
+            function loadRequestData(branch) {
+                fetch(`superadmin_request.php?branch=${branch}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        requestsData = data;
+                        populateTable(requestsData);
+                    })
+                    .catch(error => console.error("Error fetching request data:", error));
+            }
 
             fetch("superadmin_request.php")
                 .then(response => response.json())
@@ -184,69 +184,69 @@
                 })
                 .catch(error => console.error("Error fetching user data:", error));
 
-                function populateTable(data) {
-        let tableBody = document.getElementById("tableBody");
-        tableBody.innerHTML = "";
+            function populateTable(data) {
+                let tableBody = document.getElementById("tableBody");
+                tableBody.innerHTML = "";
 
-        data.forEach(request => {
-            let row = document.createElement("tr");
+                data.forEach(request => {
+                    let row = document.createElement("tr");
 
-            let idCell = document.createElement("td");
-            idCell.textContent = request.ID;
+                    let idCell = document.createElement("td");
+                    idCell.textContent = request.ID;
 
-            let nameCell = document.createElement("td");
-            nameCell.textContent = request.name;
+                    let nameCell = document.createElement("td");
+                    nameCell.textContent = request.name;
 
-            let branchCell = document.createElement("td");
-            branchCell.textContent = request.branch;
-            branchCell.setAttribute("data-branch-id", request.ID);
+                    let branchCell = document.createElement("td");
+                    branchCell.textContent = request.branch;
+                    branchCell.setAttribute("data-branch-id", request.ID);
 
-            let usernameCell = document.createElement("td");
-            usernameCell.textContent = request.username;
-            usernameCell.setAttribute("data-username-id", request.ID);
+                    let usernameCell = document.createElement("td");
+                    usernameCell.textContent = request.username;
+                    usernameCell.setAttribute("data-username-id", request.ID);
 
-            let pinCell = document.createElement("td");
-            pinCell.textContent = request.pin;
-            pinCell.setAttribute("data-pin-id", request.ID);
+                    let pinCell = document.createElement("td");
+                    pinCell.textContent = request.pin;
+                    pinCell.setAttribute("data-pin-id", request.ID);
 
-            let actionCell = document.createElement("td");
-            actionCell.style.textAlign = "center";
+                    let actionCell = document.createElement("td");
+                    actionCell.style.textAlign = "center";
 
-            let approveBtn = document.createElement("button");
-            approveBtn.classList.add("action-btn", "approve-btn");
-            approveBtn.innerHTML = `<img src="admin_images/approve.png" alt="Approve" class="icon">`;
-            approveBtn.setAttribute("data-id", request.ID);
-            approveBtn.addEventListener("click", function () {
-                approveRequest(this.getAttribute("data-id"));
-            });
+                    let approveBtn = document.createElement("button");
+                    approveBtn.classList.add("action-btn", "approve-btn");
+                    approveBtn.innerHTML = `<img src="admin_images/approve.png" alt="Approve" class="icon">`;
+                    approveBtn.setAttribute("data-id", request.ID);
+                    approveBtn.addEventListener("click", function () {
+                        approveRequest(this.getAttribute("data-id"));
+                    });
 
-            let declineBtn = document.createElement("button");
-            declineBtn.classList.add("action-btn", "decline-btn");
-            declineBtn.innerHTML = `<img src="admin_images/decline.png" alt="Decline" class="icon">`;
-            declineBtn.setAttribute("data-id", request.ID);
-            declineBtn.addEventListener("click", function () {
-                declineRequest(this.getAttribute("data-id"));
-            });
+                    let declineBtn = document.createElement("button");
+                    declineBtn.classList.add("action-btn", "decline-btn");
+                    declineBtn.innerHTML = `<img src="admin_images/decline.png" alt="Decline" class="icon">`;
+                    declineBtn.setAttribute("data-id", request.ID);
+                    declineBtn.addEventListener("click", function () {
+                        declineRequest(this.getAttribute("data-id"));
+                    });
 
-            let buttonContainer = document.createElement("div");
-            buttonContainer.classList.add("action-buttons");
-            buttonContainer.style.display = "flex";
-            buttonContainer.style.gap = "5px";
-            buttonContainer.appendChild(approveBtn);
-            buttonContainer.appendChild(declineBtn);
+                    let buttonContainer = document.createElement("div");
+                    buttonContainer.classList.add("action-buttons");
+                    buttonContainer.style.display = "flex";
+                    buttonContainer.style.gap = "5px";
+                    buttonContainer.appendChild(approveBtn);
+                    buttonContainer.appendChild(declineBtn);
 
-            actionCell.appendChild(buttonContainer);
+                    actionCell.appendChild(buttonContainer);
 
-            row.appendChild(idCell);
-            row.appendChild(nameCell);
-            row.appendChild(branchCell);
-            row.appendChild(usernameCell);
-            row.appendChild(pinCell);
-            row.appendChild(actionCell);
+                    row.appendChild(idCell);
+                    row.appendChild(nameCell);
+                    row.appendChild(branchCell);
+                    row.appendChild(usernameCell);
+                    row.appendChild(pinCell);
+                    row.appendChild(actionCell);
 
-            tableBody.appendChild(row);
-        });
-    }
+                    tableBody.appendChild(row);
+                });
+            }
 
             // Search functionality
             document.getElementById("search").addEventListener("input", function () {
@@ -318,153 +318,153 @@
 <!DOCTYPE html>
 <html>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let requestData = [];
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let requestData = [];
 
-            fetch("4.2dapitanUserRequest.php")
-                .then(response => response.json())
-                .then(data => {
-                    requestData = data;
-                    populateTable(requestData);
-                })
-                .catch(error => console.error("Error fetching user data:", error));
+        fetch("4.2dapitanUserRequest.php")
+            .then(response => response.json())
+            .then(data => {
+                requestData = data;
+                populateTable(requestData);
+            })
+            .catch(error => console.error("Error fetching user data:", error));
 
-            function populateTable(data) {
-                let tableBody = document.getElementById("tableBody");
-                tableBody.innerHTML = "";
+        function populateTable(data) {
+            let tableBody = document.getElementById("tableBody");
+            tableBody.innerHTML = "";
 
-                data.forEach(request => {
-                    let row = document.createElement("tr");
+            data.forEach(request => {
+                let row = document.createElement("tr");
 
-                    let idCell = document.createElement("td");
-                    idCell.textContent = request.ID;
+                let idCell = document.createElement("td");
+                idCell.textContent = request.ID;
 
-                    let nameCell = document.createElement("td");
-                    nameCell.textContent = request.name;
+                let nameCell = document.createElement("td");
+                nameCell.textContent = request.name;
 
-                    let branchCell = document.createElement("td");
-                    branchCell.textContent = request.branch;
+                let branchCell = document.createElement("td");
+                branchCell.textContent = request.branch;
 
-                    let usernameCell = document.createElement("td");
-                    usernameCell.textContent = request.username;
+                let usernameCell = document.createElement("td");
+                usernameCell.textContent = request.username;
 
-                    let pinCell = document.createElement("td");
-                    pinCell.textContent = request.pin;
+                let pinCell = document.createElement("td");
+                pinCell.textContent = request.pin;
 
-                    let actionCell = document.createElement("td");
-                    actionCell.style.textAlign = "center";
+                let actionCell = document.createElement("td");
+                actionCell.style.textAlign = "center";
 
-                    let approveBtn = document.createElement("button");
-                    approveBtn.classList.add("action-btn", "approve-btn");
-                    approveBtn.innerHTML = `<img src="images/approve.png" alt="Approve" class="icon">`;
-                    approveBtn.setAttribute("data-id", request.ID);
-                    approveBtn.addEventListener("click", function () {
-                        approveRequest(this.getAttribute("data-id"));
-                    });
-
-                    let declineBtn = document.createElement("button");
-                    declineBtn.classList.add("action-btn", "decline-btn");
-                    declineBtn.innerHTML = `<img src="images/decline.png" alt="Decline" class="icon">`;
-                    declineBtn.setAttribute("data-id", request.ID);
-                    declineBtn.addEventListener("click", function () {
-                        declineRequest(this.getAttribute("data-id"));
-                    });
-
-                    let buttonContainer = document.createElement("div");
-                    buttonContainer.classList.add("action-buttons");
-                    buttonContainer.style.display = "flex";
-                    buttonContainer.style.gap = "5px";
-                    buttonContainer.appendChild(approveBtn);
-                    buttonContainer.appendChild(declineBtn);
-
-                    actionCell.appendChild(buttonContainer);
-
-                    row.appendChild(idCell);
-                    row.appendChild(nameCell);
-                    row.appendChild(branchCell);
-                    row.appendChild(usernameCell);
-                    row.appendChild(pinCell);
-                    row.appendChild(actionCell);
-
-                    tableBody.appendChild(row);
+                let approveBtn = document.createElement("button");
+                approveBtn.classList.add("action-btn", "approve-btn");
+                approveBtn.innerHTML = `<img src="images/approve.png" alt="Approve" class="icon">`;
+                approveBtn.setAttribute("data-id", request.ID);
+                approveBtn.addEventListener("click", function () {
+                    approveRequest(this.getAttribute("data-id"));
                 });
 
-                // Hide/show actions column based on branch filter
-                const branchFilter = document.getElementById("branchFilter");
-                const actionCells = document.querySelectorAll("td:nth-child(6)");
-                branchFilter.addEventListener("change", function () {
-                    const selectedBranch = this.value;
-                    actionCells.forEach(cell => {
-                        cell.style.display = selectedBranch === "all" ? "table-cell" : "none";
-                    });
+                let declineBtn = document.createElement("button");
+                declineBtn.classList.add("action-btn", "decline-btn");
+                declineBtn.innerHTML = `<img src="images/decline.png" alt="Decline" class="icon">`;
+                declineBtn.setAttribute("data-id", request.ID);
+                declineBtn.addEventListener("click", function () {
+                    declineRequest(this.getAttribute("data-id"));
                 });
-            }
 
-            // Search functionality
-            document.getElementById("search").addEventListener("input", function () {
-                let searchValue = this.value.toLowerCase();
-                let filteredData = requestData.filter(user =>
-                    user.ID.toString().includes(searchValue) ||
-                    user.name.toLowerCase().includes(searchValue) ||
-                    user.username.toLowerCase().includes(searchValue) ||
-                    user.pin.toLowerCase().includes(searchValue)
-                );
+                let buttonContainer = document.createElement("div");
+                buttonContainer.classList.add("action-buttons");
+                buttonContainer.style.display = "flex";
+                buttonContainer.style.gap = "5px";
+                buttonContainer.appendChild(approveBtn);
+                buttonContainer.appendChild(declineBtn);
 
-                populateTable(filteredData);
+                actionCell.appendChild(buttonContainer);
+
+                row.appendChild(idCell);
+                row.appendChild(nameCell);
+                row.appendChild(branchCell);
+                row.appendChild(usernameCell);
+                row.appendChild(pinCell);
+                row.appendChild(actionCell);
+
+                tableBody.appendChild(row);
             });
 
-            // Approve request
-            function approveRequest(userID) {
-                if (!userID) {
-                    alert("Error: No user ID found.");
-                    return;
-                }
+            // Hide/show actions column based on branch filter
+            const branchFilter = document.getElementById("branchFilter");
+            const actionCells = document.querySelectorAll("td:nth-child(6)");
+            branchFilter.addEventListener("change", function () {
+                const selectedBranch = this.value;
+                actionCells.forEach(cell => {
+                    cell.style.display = selectedBranch === "all" ? "table-cell" : "none";
+                });
+            });
+        }
 
-                let confirmApproval = confirm("Are you sure you want to approve this user?");
-                if (!confirmApproval) return;
+        // Search functionality
+        document.getElementById("search").addEventListener("input", function () {
+            let searchValue = this.value.toLowerCase();
+            let filteredData = requestData.filter(user =>
+                user.ID.toString().includes(searchValue) ||
+                user.name.toLowerCase().includes(searchValue) ||
+                user.username.toLowerCase().includes(searchValue) ||
+                user.pin.toLowerCase().includes(searchValue)
+            );
 
-                fetch("approve.php", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: "id=" + encodeURIComponent(userID)
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        alert(data.message);
-                        if (data.status === "success") {
-                            location.reload();
-                        }
-                    })
-                    .catch(error => console.error("Error approving request:", error));
-            }
-
-            // Decline request
-            function declineRequest(userID) {
-                if (!userID) {
-                    alert("Error: No user ID found.");
-                    return;
-                }
-
-                let confirmApproval = confirm("Are you sure you want to decline this user?");
-                if (!confirmApproval) return;
-
-                fetch("decline.php", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: "id=" + encodeURIComponent(userID)
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        alert(data.message);
-                        if (data.status === "success") {
-                            location.reload();
-                        }
-                    })
-                    .catch(error => console.error("Error declining request:", error));
-            }
+            populateTable(filteredData);
         });
-    </script>
+
+        // Approve request
+        function approveRequest(userID) {
+            if (!userID) {
+                alert("Error: No user ID found.");
+                return;
+            }
+
+            let confirmApproval = confirm("Are you sure you want to approve this user?");
+            if (!confirmApproval) return;
+
+            fetch("approve.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "id=" + encodeURIComponent(userID)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.status === "success") {
+                        location.reload();
+                    }
+                })
+                .catch(error => console.error("Error approving request:", error));
+        }
+
+        // Decline request
+        function declineRequest(userID) {
+            if (!userID) {
+                alert("Error: No user ID found.");
+                return;
+            }
+
+            let confirmApproval = confirm("Are you sure you want to decline this user?");
+            if (!confirmApproval) return;
+
+            fetch("decline.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "id=" + encodeURIComponent(userID)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.status === "success") {
+                        location.reload();
+                    }
+                })
+                .catch(error => console.error("Error declining request:", error));
+        }
+    });
+</script>
 </body>
 
 </html>

@@ -28,22 +28,26 @@
         <main class="main-content">
             <h2>Archives</h2>
             <!-- FILTER FORM -->
-            <form class="archive-form" action="#" method="get"> <!-- Database -->
+            <form class="archive-form" action="#" method="get" style="margin-right: 5%;"> <!-- Database -->
                 <div class="dropdown">
+                    <label for="branchSelect"
+                        style="font-size: 14px; margin-right: 5px;"><strong>Branch:</strong></label>
                     <select id="branchSelect">
                         <option value="all">All</option>
                     </select>
                 </div>
 
+                <label for="date-input" style="padding-right: 5px; padding-left: 30px;"><strong>From</strong></label>
                 <input type="date" id="date" name="date" class="date-input">
-
+                <label for="date-input" style="padding-left: 5px; padding-right: 5px;"><strong>To</strong></label>
+                <input type="date" id="date" name="date" class="date-input">
                 <input type="search" id="search" name="query" placeholder="Search..." required>
             </form>
 
             <!-- TABLE -->
             <div>
                 <h3>Archived Records</h3>
-                <table border="1" width="100%">
+                <table border="0.5" width="100%">
                     <tr>
                         <th style="width: 12.5%;">ID NUMBER</th>
                         <th style="width: 12.5%;">NAME</th>
@@ -78,8 +82,8 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Enter Password</h2>
-            <input type="password" id="passwordInput" placeholder="Enter your password">
-            <button id="passwordSubmit">Submit</button>
+            <input class="modal-password-input" type="password" id="passwordInput" placeholder="Enter your password">
+            <button class="modal-password-btn" id="passwordSubmit">Submit</button>
         </div>
     </div>
 
@@ -214,12 +218,12 @@
             document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
                 event.preventDefault();
                 showPasswordModal("superadmin_accountSettings.html");
-                
+
             });
 
             document.getElementById("branchManagementLink").addEventListener("click", function (event) {
-            event.preventDefault();
-            showPasswordModal("superadmin_branchmgmt.html");
+                event.preventDefault();
+                showPasswordModal("superadmin_branchmgmt.html");
             });
 
             function showPasswordModal(redirectUrl) {

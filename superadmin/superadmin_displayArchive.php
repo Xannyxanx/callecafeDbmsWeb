@@ -39,13 +39,13 @@ if ($branchConn->connect_error) {
     die("Connection failed: " . $branchConn->connect_error);
 }
 
-$sqlBranches = "SELECT DISTINCT branch FROM users WHERE branch IS NOT NULL AND branch != '' AND LOWER(branch) != 'superadmin'";
+$sqlBranches = "SELECT branch_name FROM branches WHERE branch_name IS NOT NULL AND branch_name != '' AND LOWER(branch_name) != 'superadmin'";
 $resultBranches = $branchConn->query($sqlBranches);
 
 $branches = [];
 if ($resultBranches->num_rows > 0) {
     while ($row = $resultBranches->fetch_assoc()) {
-        $branches[] = $row['branch'];
+        $branches[] = $row['branch_name'];
     }
 }
 $branchConn->close();

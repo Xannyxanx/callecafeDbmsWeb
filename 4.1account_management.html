@@ -29,6 +29,13 @@
                 <a href="4.2requests.html" style="text-decoration: none;">
                     <button type="button" id="requestsBtn" class="registered-btn">USER REQUESTS</button>
                 </a>
+                <div class="dropdown" style="padding-left: 22px;">
+                    <select id="#">
+                        <option value="#">Active</option>
+                        <option value="#" style="color: red;">Inactive</option>
+                        <option value="#">All</option>
+                    </select>
+                </div>
                 <input type="search" id="search" name="query" placeholder="Search..." required>
             </form>
 
@@ -37,10 +44,10 @@
                 <h3>Registered Users List</h3>
                 <table class="styled-table" border="1" width="100%">
                     <tr>
-                        <th style="width: 10%;">ID</th>
+                        <th style="width: 20%;">ID</th>
                         <th>NAME</th>
                         <th>USERNAME</th>
-                        <th style="width: 25%;">PIN</th>
+                        <th style="width: 15%;">PIN</th>
                         <th style="width: 15%;">Actions</th>
                     </tr>
                     <tbody id="tableBody">
@@ -48,226 +55,236 @@
                 </table>
             </div>
         </main>
-    </div>
-
-    <div id="passwordModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Enter Password</h2>
-            <input type="password" id="passwordInput" placeholder="Enter your password">
-            <button id="passwordSubmit">Submit</button>
         </div>
-    </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let usersData = []; 
+        <div id="passwordModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Enter Password</h2>
+                <input class="modal-password-input" type="password" id="passwordInput"
+                    placeholder="Enter your password">
+                <button class="modal-password-btn" id="passwordSubmit">Submit</button>
+            </div>
+        </div>
 
-            fetch("4.1accountManagement.php")
-                .then(response => response.json())
-                .then(data => {
-                    usersData = data; 
-                    populateTable(usersData);
-                })
-                .catch(error => console.error("Error fetching user data:", error));
+        <div class="modal"> <!-- LOGOUT MODAL -->
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Are you sure?</h2>
+                <button>Yes</button>
+                <button>No</button>
+            </div>
+        </div>
 
-            function populateTable(data) {
-                let tableBody = document.getElementById("tableBody");
-                tableBody.innerHTML = ""; 
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                let usersData = [];
 
-                data.forEach(user => {
-                    let row = document.createElement("tr");
+                fetch("4.1accountManagement.php")
+                    .then(response => response.json())
+                    .then(data => {
+                        usersData = data;
+                        populateTable(usersData);
+                    })
+                    .catch(error => console.error("Error fetching user data:", error));
 
-                    let idCell = document.createElement("td");
-                    idCell.textContent = user.ID;
+                function populateTable(data) {
+                    let tableBody = document.getElementById("tableBody");
+                    tableBody.innerHTML = "";
 
-                    let nameCell = document.createElement("td");
-                    nameCell.textContent = user.name;
+                    data.forEach(user => {
+                        let row = document.createElement("tr");
 
-                    let usernameCell = document.createElement("td");
-                    usernameCell.textContent = user.username;
-                    usernameCell.setAttribute("data-username-id", user.ID);
+                        let idCell = document.createElement("td");
+                        idCell.textContent = user.ID;
 
-                    let pinCell = document.createElement("td");
-                    pinCell.textContent = user.pin;
-                    pinCell.setAttribute("data-pin-id", user.ID);
+                        let nameCell = document.createElement("td");
+                        nameCell.textContent = user.name;
 
-                    let actionCell = document.createElement("td");
-                    actionCell.style.textAlign = "center";
+                        let usernameCell = document.createElement("td");
+                        usernameCell.textContent = user.username;
+                        usernameCell.setAttribute("data-username-id", user.ID);
 
-                    let editBtn = document.createElement("button");
-                    editBtn.classList.add("action-btn", "approve-btn");
-                    editBtn.innerHTML = `<img src="images/edit.png" alt="Edit" class="icon">`;
-                    editBtn.setAttribute("data-id", user.ID);
-                    editBtn.addEventListener("click", function () {
-                        editUser(this.getAttribute("data-id"));
+                        let pinCell = document.createElement("td");
+                        pinCell.textContent = user.pin;
+                        pinCell.setAttribute("data-pin-id", user.ID);
+
+                        let actionCell = document.createElement("td");
+                        actionCell.style.textAlign = "center";
+
+                        let editBtn = document.createElement("button");
+                        editBtn.classList.add("action-btn", "approve-btn");
+                        editBtn.innerHTML = `<img src="images/edit.png" alt="Edit" class="icon">`;
+                        editBtn.setAttribute("data-id", user.ID);
+                        editBtn.addEventListener("click", function () {
+                            editUser(this.getAttribute("data-id"));
+                        });
+
+                        let deleteBtn = document.createElement("button");
+                        deleteBtn.classList.add("action-btn", "decline-btn");
+                        deleteBtn.innerHTML = `<img src="images/decline.png" alt="Decline" class="icon">`;
+                        deleteBtn.setAttribute("data-id", user.ID);
+                        deleteBtn.addEventListener("click", function () {
+                            deleteUser(this.getAttribute("data-id"));
+                        });
+
+                        let buttonContainer = document.createElement("div");
+                        buttonContainer.classList.add("action-buttons");
+                        buttonContainer.style.display = "flex";
+                        buttonContainer.style.gap = "5px";
+                        buttonContainer.appendChild(editBtn);
+                        buttonContainer.appendChild(deleteBtn);
+
+                        actionCell.appendChild(buttonContainer);
+
+                        row.appendChild(idCell);
+                        row.appendChild(nameCell);
+                        row.appendChild(usernameCell);
+                        row.appendChild(pinCell);
+                        row.appendChild(actionCell);
+
+                        tableBody.appendChild(row);
+                    });
+                }
+
+                function editUser(userID) {
+                    let usernameCell = document.querySelector(`td[data-username-id='${userID}']`);
+                    let currentUsername = usernameCell.textContent;
+
+                    let pinCell = document.querySelector(`td[data-pin-id='${userID}']`);
+                    let currentPin = pinCell.textContent;
+
+                    usernameCell.innerHTML = `<input type="text" value="${currentUsername}" id="editUsername-${userID}">`;
+                    pinCell.innerHTML = `<input type="text" value="${currentPin}" id="editPin-${userID}">`;
+
+                    let saveBtn = document.createElement("button");
+                    saveBtn.classList.add("action-btn", "save-btn");
+                    saveBtn.textContent = "Save";
+                    saveBtn.setAttribute("data-id", userID);
+                    saveBtn.addEventListener("click", function () {
+                        saveUser(this.getAttribute("data-id"));
                     });
 
-                    let deleteBtn = document.createElement("button");
-                    deleteBtn.classList.add("action-btn", "decline-btn");
-                    deleteBtn.innerHTML = `<img src="images/decline.png" alt="Decline" class="icon">`;
-                    deleteBtn.setAttribute("data-id", user.ID);
-                    deleteBtn.addEventListener("click", function () {
-                        deleteUser(this.getAttribute("data-id"));
-                    });
-
-                    let buttonContainer = document.createElement("div");
-                    buttonContainer.classList.add("action-buttons");
-                    buttonContainer.style.display = "flex";
-                    buttonContainer.style.gap = "5px";
-                    buttonContainer.appendChild(editBtn);
-                    buttonContainer.appendChild(deleteBtn);
-
-                    actionCell.appendChild(buttonContainer);
-
-                    row.appendChild(idCell);
-                    row.appendChild(nameCell);
-                    row.appendChild(usernameCell);
-                    row.appendChild(pinCell);
-                    row.appendChild(actionCell);
-
-                    tableBody.appendChild(row);
-                });
-            }
-
-            function editUser(userID) {
-                let usernameCell = document.querySelector(`td[data-username-id='${userID}']`);
-                let currentUsername = usernameCell.textContent;
-
-                let pinCell = document.querySelector(`td[data-pin-id='${userID}']`);
-                let currentPin = pinCell.textContent;
-
-                usernameCell.innerHTML = `<input type="text" value="${currentUsername}" id="editUsername-${userID}">`;
-                pinCell.innerHTML = `<input type="text" value="${currentPin}" id="editPin-${userID}">`;
-
-                let saveBtn = document.createElement("button");
-                saveBtn.classList.add("action-btn", "save-btn");
-                saveBtn.textContent = "Save";
-                saveBtn.setAttribute("data-id", userID);
-                saveBtn.addEventListener("click", function () {
-                    saveUser(this.getAttribute("data-id"));
-                });
-
-                let editBtn = document.querySelector(`button[data-id='${userID}']`);
-                editBtn.replaceWith(saveBtn);
-            }
-
-            function saveUser(userID) {
-                let newUsername = document.getElementById(`editUsername-${userID}`).value;
-                let newPin = document.getElementById(`editPin-${userID}`).value;
-
-                fetch("4.1.update.php", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: "id=" + encodeURIComponent(userID) + "&username=" + encodeURIComponent(newUsername) + "&pin=" + encodeURIComponent(newPin)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Response from server:", data); 
-                    alert(data.message);
-                    if (data.status === "success") {
-                        console.log("Reloading page..."); 
-                        location.reload();
-                    } else {
-                        console.error("Update failed:", data.message);
-                    }
-                })
-                .catch(error => console.error("Error updating user:", error));
-            }
-
-            function deleteUser(userID) {
-                if (!userID) {
-                    alert("Error: No user ID found.");
-                    return;
+                    let editBtn = document.querySelector(`button[data-id='${userID}']`);
+                    editBtn.replaceWith(saveBtn);
                 }
 
-                let confirmRemove = confirm("ARE YOU SURE YOU WANT TO REMOVE THIS USER?");
-                if (!confirmRemove) {
-                    return;
-                } else {
-                    let confirmDelete = confirm("REMOVING THIS USER WILL REQUIRE THEM TO REGISTER AGAIN IF NEEDED. ARE YOU SURE YOU WANT TO PROCEED?");
-                    if (!confirmDelete) {
-                        return;
-                    }
-                }
-                console.log("Deleting User ID:", userID); 
-                fetch("4.1.delete.php", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: "id=" + encodeURIComponent(userID)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Response from server:", data); 
-                    alert(data.message);
-                    if (data.status === "success") {
-                        location.reload();
-                    }
-                })
-                .catch(error => console.error("Error deleting user:", error));
-            }
+                function saveUser(userID) {
+                    let newUsername = document.getElementById(`editUsername-${userID}`).value;
+                    let newPin = document.getElementById(`editPin-${userID}`).value;
 
-            document.getElementById("accountManagementLink").addEventListener("click", function (event) {
-                event.preventDefault();
-                showPasswordModal("4.1account_management.html");
-            });
-
-            document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
-                event.preventDefault();
-                showPasswordModal("5.account_settings.html");
-            });
-
-            function showPasswordModal(redirectUrl) {
-                const modal = document.getElementById("passwordModal");
-                const closeBtn = document.querySelector(".close");
-                const submitBtn = document.getElementById("passwordSubmit");
-
-                modal.style.display = "block";
-
-                closeBtn.onclick = function() {
-                    modal.style.display = "none";
-                }
-
-                window.onclick = function(event) {
-                    if (event.target == modal) {
-                        modal.style.display = "none";
-                    }
-                }
-
-                submitBtn.onclick = function() {
-                    const password = document.getElementById("passwordInput").value;
-                    if (password) {
-                        fetch("verify_password.php", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                            body: "password=" + encodeURIComponent(password)
-                        })
+                    fetch("4.1.update.php", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: "id=" + encodeURIComponent(userID) + "&username=" + encodeURIComponent(newUsername) + "&pin=" + encodeURIComponent(newPin)
+                    })
                         .then(response => response.json())
                         .then(data => {
-                            if (data.success) {
-                                window.location.href = redirectUrl;
+                            console.log("Response from server:", data);
+                            alert(data.message);
+                            if (data.status === "success") {
+                                console.log("Reloading page...");
+                                location.reload();
                             } else {
-                                alert("Incorrect password. Please try again.");
+                                console.error("Update failed:", data.message);
                             }
                         })
-                        .catch(error => console.error("Error verifying password:", error));
+                        .catch(error => console.error("Error updating user:", error));
+                }
+
+                function deleteUser(userID) {
+                    if (!userID) {
+                        alert("Error: No user ID found.");
+                        return;
+                    }
+
+                    let confirmRemove = confirm("ARE YOU SURE YOU WANT TO REMOVE THIS USER?");
+                    if (!confirmRemove) {
+                        return;
+                    } else {
+                        let confirmDelete = confirm("REMOVING THIS USER WILL REQUIRE THEM TO REGISTER AGAIN IF NEEDED. ARE YOU SURE YOU WANT TO PROCEED?");
+                        if (!confirmDelete) {
+                            return;
+                        }
+                    }
+                    console.log("Deleting User ID:", userID);
+                    fetch("4.1.delete.php", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: "id=" + encodeURIComponent(userID)
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log("Response from server:", data);
+                            alert(data.message);
+                            if (data.status === "success") {
+                                location.reload();
+                            }
+                        })
+                        .catch(error => console.error("Error deleting user:", error));
+                }
+
+                document.getElementById("accountManagementLink").addEventListener("click", function (event) {
+                    event.preventDefault();
+                    showPasswordModal("4.1account_management.html");
+                });
+
+                document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
+                    event.preventDefault();
+                    showPasswordModal("5.account_settings.html");
+                });
+
+                function showPasswordModal(redirectUrl) {
+                    const modal = document.getElementById("passwordModal");
+                    const closeBtn = document.querySelector(".close");
+                    const submitBtn = document.getElementById("passwordSubmit");
+
+                    modal.style.display = "block";
+
+                    closeBtn.onclick = function () {
+                        modal.style.display = "none";
+                    }
+
+                    window.onclick = function (event) {
+                        if (event.target == modal) {
+                            modal.style.display = "none";
+                        }
+                    }
+
+                    submitBtn.onclick = function () {
+                        const password = document.getElementById("passwordInput").value;
+                        if (password) {
+                            fetch("verify_password.php", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                                body: "password=" + encodeURIComponent(password)
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        window.location.href = redirectUrl;
+                                    } else {
+                                        alert("Incorrect password. Please try again.");
+                                    }
+                                })
+                                .catch(error => console.error("Error verifying password:", error));
+                        }
                     }
                 }
-            }
 
-            document.getElementById("search").addEventListener("input", function () {
-                let searchValue = this.value.toLowerCase();
-                let filteredData = usersData.filter(user =>
-                    user.ID.toString().includes(searchValue) ||
-                    user.name.toLowerCase().includes(searchValue) ||
-                    user.username.toLowerCase().includes(searchValue) ||
-                    user.pin.toLowerCase().includes(searchValue)
-                );
+                document.getElementById("search").addEventListener("input", function () {
+                    let searchValue = this.value.toLowerCase();
+                    let filteredData = usersData.filter(user =>
+                        user.ID.toString().includes(searchValue) ||
+                        user.name.toLowerCase().includes(searchValue) ||
+                        user.username.toLowerCase().includes(searchValue) ||
+                        user.pin.toLowerCase().includes(searchValue)
+                    );
 
-                populateTable(filteredData); 
+                    populateTable(filteredData);
+                });
             });
-        });
-    </script>
+        </script>
 </body>
 
 </html>

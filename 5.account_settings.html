@@ -45,131 +45,141 @@
                 </form>
             </div>
         </main>
-    </div>
-
-
-    <div id="passwordModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Enter Password</h2>
-            <input type="password" id="passwordInput" placeholder="Enter your password">
-            <button id="passwordSubmit">Submit</button>
         </div>
-    </div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        fetch("5.users.php")
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    console.error(data.error);
-                    return;
-                }
-    
-                document.getElementById("currentName").innerText = data.name;
-                document.getElementById("currentEmail").innerText = data.email;
-                document.getElementById("currentPassword").innerText = data.password; 
-            })
-            .catch(error => console.error("Error fetching user data:", error));
-    });
-   
-   
-    function updateUser() {
-    var name = document.getElementById("name").value.trim();
-    var email = document.getElementById("email").value.trim();
-    var password = document.getElementById("password").value.trim();
-    var confirmPassword = document.getElementById("confirmPassword").value.trim();
 
 
-    var userData = {};
-    if (name) userData.name = name;
-    if (email) userData.email = email;
-    if (password) userData.password = password;
-    if (confirmPassword) userData.confirmPassword = confirmPassword;
+        <div id="passwordModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Enter Password</h2>
+                <input type="password" id="passwordInput" placeholder="Enter your password">
+                <button id="passwordSubmit">Submit</button>
+            </div>
+        </div>
 
+        <div class="modal"> <!-- LOGOUT MODAL -->
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Are you sure?</h2>
+                <button>Yes</button>
+                <button>No</button>
+            </div>
+        </div>
 
-    if (Object.keys(userData).length === 0) {
-        alert("Please fill in at least one field to update.");
-        return;
-    }
-
-    fetch("5.update_user.php", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(userData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert(data.error);
-        } else {
-            alert(data.success);
-            location.reload(); 
-        }
-    })
-    .catch(error => console.error("Error updating user:", error));
-}
-
-    document.getElementById("logoutButton").addEventListener("click", function() {
-        window.location.href = "logout.php"; 
-    });
-
-    window.history.pushState(null, "", window.location.href);
-    window.onpopstate = function () {
-        window.history.pushState(null, "", window.location.href);
-    };
-
-            document.getElementById("accountManagementLink").addEventListener("click", function (event) {
-            event.preventDefault();
-            showPasswordModal("4.1account_management.html");
-        });
-
-        document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
-            event.preventDefault();
-            showPasswordModal("5.account_settings.html");
-        });
-
-        function showPasswordModal(redirectUrl) {
-            const modal = document.getElementById("passwordModal");
-            const closeBtn = document.querySelector(".close");
-            const submitBtn = document.getElementById("passwordSubmit");
-
-            modal.style.display = "block";
-
-            closeBtn.onclick = function() {
-                modal.style.display = "none";
-            }
-
-            window.onclick = function(event) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
-            }
-
-            submitBtn.onclick = function() {
-                const password = document.getElementById("passwordInput").value;
-                if (password) {
-                    fetch("verify_password.php", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                        body: "password=" + encodeURIComponent(password)
-                    })
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                fetch("5.users.php")
                     .then(response => response.json())
                     .then(data => {
-                        if (data.success) {
-                            window.location.href = redirectUrl;
+                        if (data.error) {
+                            console.error(data.error);
+                            return;
+                        }
+
+                        document.getElementById("currentName").innerText = data.name;
+                        document.getElementById("currentEmail").innerText = data.email;
+                        document.getElementById("currentPassword").innerText = data.password;
+                    })
+                    .catch(error => console.error("Error fetching user data:", error));
+            });
+
+
+            function updateUser() {
+                var name = document.getElementById("name").value.trim();
+                var email = document.getElementById("email").value.trim();
+                var password = document.getElementById("password").value.trim();
+                var confirmPassword = document.getElementById("confirmPassword").value.trim();
+
+
+                var userData = {};
+                if (name) userData.name = name;
+                if (email) userData.email = email;
+                if (password) userData.password = password;
+                if (confirmPassword) userData.confirmPassword = confirmPassword;
+
+
+                if (Object.keys(userData).length === 0) {
+                    alert("Please fill in at least one field to update.");
+                    return;
+                }
+
+                fetch("5.update_user.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(userData)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
                         } else {
-                            alert("Incorrect password. Please try again.");
+                            alert(data.success);
+                            location.reload();
                         }
                     })
-                    .catch(error => console.error("Error verifying password:", error));
+                    .catch(error => console.error("Error updating user:", error));
+            }
+
+            document.getElementById("logoutButton").addEventListener("click", function () {
+                window.location.href = "logout.php";
+            });
+
+            window.history.pushState(null, "", window.location.href);
+            window.onpopstate = function () {
+                window.history.pushState(null, "", window.location.href);
+            };
+
+            document.getElementById("accountManagementLink").addEventListener("click", function (event) {
+                event.preventDefault();
+                showPasswordModal("4.1account_management.html");
+            });
+
+            document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
+                event.preventDefault();
+                showPasswordModal("5.account_settings.html");
+            });
+
+            function showPasswordModal(redirectUrl) {
+                const modal = document.getElementById("passwordModal");
+                const closeBtn = document.querySelector(".close");
+                const submitBtn = document.getElementById("passwordSubmit");
+
+                modal.style.display = "block";
+
+                closeBtn.onclick = function () {
+                    modal.style.display = "none";
+                }
+
+                window.onclick = function (event) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                }
+
+                submitBtn.onclick = function () {
+                    const password = document.getElementById("passwordInput").value;
+                    if (password) {
+                        fetch("verify_password.php", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                            body: "password=" + encodeURIComponent(password)
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    window.location.href = redirectUrl;
+                                } else {
+                                    alert("Incorrect password. Please try again.");
+                                }
+                            })
+                            .catch(error => console.error("Error verifying password:", error));
+                    }
                 }
             }
-        }
-     
-    </script>
-    </body>
+
+        </script>
+</body>
+
 </html>

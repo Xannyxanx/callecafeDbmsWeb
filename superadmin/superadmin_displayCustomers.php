@@ -21,13 +21,13 @@ $user_name = $_SESSION['user_name'];
 $branch = $_SESSION['branch'];
 
 // Fetch distinct branches from the users table, excluding "superadmin"
-$sqlBranches = "SELECT DISTINCT branch FROM users WHERE branch IS NOT NULL AND branch != '' AND LOWER(branch) != 'superadmin'";
+$sqlBranches = "SELECT DISTINCT branch_name FROM branches WHERE branch_name IS NOT NULL AND branch_name != '' AND LOWER(branch_name) != 'superadmin'";
 $resultBranches = $conn->query($sqlBranches);
 
 $branches = [];
 if ($resultBranches->num_rows > 0) {
     while ($row = $resultBranches->fetch_assoc()) {
-        $branches[] = $row['branch'];
+        $branches[] = $row['branch_name'];
     }
 }
 

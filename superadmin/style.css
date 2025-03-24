@@ -411,7 +411,7 @@ td {
 
 /*TABLE STYLING START*/
 table {
-    width: 100%;
+    width: 95%;
     border-collapse: collapse;
     font-family: Arial, sans-serif;
 }
@@ -456,6 +456,7 @@ table tr:hover {
     justify-content: space-around;
     flex-wrap: wrap;
     margin-top: 20px;
+    width: 95%;
 }
 
 canvas {
@@ -568,4 +569,46 @@ canvas {
     /* Prevents overflow */
     height: 300px;
     /* Fixes chart height */
+}
+
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.pagination-controls-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    margin: 0 5px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s, transform 0.2s;
+    font-size: 14px;
+}
+
+.pagination-controls button:disabled {
+    background-color: #c0c0c0;
+    /* Grey background for disabled state */
+    cursor: not-allowed;
+    /* Not-allowed cursor for disabled button */
+}
+
+.pagination-controls button:hover:not(:disabled) {
+    background-color: #0056b3;
+    /* Darker blue on hover */
+    transform: scale(1.05);
+    /* Slight scale effect on hover */
+}
+
+.pagination-controls span {
+    margin: 0 10px;
+    /* Space around page info */
+    font-size: 16px;
+    /* Font size for page info */
+    color: #333;
+    /* Darker text color */
 }

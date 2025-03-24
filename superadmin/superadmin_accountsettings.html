@@ -52,91 +52,91 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Enter Password</h2>
-            <input type="password" id="passwordInput" placeholder="Enter your password">
-            <button id="passwordSubmit">Submit</button>
+            <input class="modal-password-input" type="password" id="passwordInput" placeholder="Enter your password">
+            <button class="modal-password-btn" id="passwordSubmit">Submit</button>
         </div>
     </div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        fetch("5.users.php")
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    console.error(data.error);
-                    return;
-                }
-    
-                document.getElementById("currentName").innerText = data.name;
-                document.getElementById("currentEmail").innerText = data.email;
-                document.getElementById("currentPassword").innerText = data.password; 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("5.users.php")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                        return;
+                    }
+
+                    document.getElementById("currentName").innerText = data.name;
+                    document.getElementById("currentEmail").innerText = data.email;
+                    document.getElementById("currentPassword").innerText = data.password;
+                })
+                .catch(error => console.error("Error fetching user data:", error));
+        });
+
+
+        function updateUser() {
+            var name = document.getElementById("name").value.trim();
+            var email = document.getElementById("email").value.trim();
+            var password = document.getElementById("password").value.trim();
+            var confirmPassword = document.getElementById("confirmPassword").value.trim();
+
+
+            var userData = {};
+            if (name) userData.name = name;
+            if (email) userData.email = email;
+            if (password) userData.password = password;
+            if (confirmPassword) userData.confirmPassword = confirmPassword;
+
+
+            if (Object.keys(userData).length === 0) {
+                alert("Please fill in at least one field to update.");
+                return;
+            }
+
+            fetch("5.update_user.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(userData)
             })
-            .catch(error => console.error("Error fetching user data:", error));
-    });
-   
-   
-    function updateUser() {
-    var name = document.getElementById("name").value.trim();
-    var email = document.getElementById("email").value.trim();
-    var password = document.getElementById("password").value.trim();
-    var confirmPassword = document.getElementById("confirmPassword").value.trim();
-
-
-    var userData = {};
-    if (name) userData.name = name;
-    if (email) userData.email = email;
-    if (password) userData.password = password;
-    if (confirmPassword) userData.confirmPassword = confirmPassword;
-
-
-    if (Object.keys(userData).length === 0) {
-        alert("Please fill in at least one field to update.");
-        return;
-    }
-
-    fetch("5.update_user.php", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(userData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert(data.error);
-        } else {
-            alert(data.success);
-            location.reload(); 
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        alert(data.success);
+                        location.reload();
+                    }
+                })
+                .catch(error => console.error("Error updating user:", error));
         }
-    })
-    .catch(error => console.error("Error updating user:", error));
-}
 
-    document.getElementById("logoutButton").addEventListener("click", function() {
-        window.location.href = "logout.php"; 
-    });
+        document.getElementById("logoutButton").addEventListener("click", function () {
+            window.location.href = "logout.php";
+        });
 
-    window.history.pushState(null, "", window.location.href);
-    window.onpopstate = function () {
         window.history.pushState(null, "", window.location.href);
-    };
+        window.onpopstate = function () {
+            window.history.pushState(null, "", window.location.href);
+        };
 
-             document.getElementById("accountManagementLink").addEventListener("click", function (event) {
-                event.preventDefault();
-                showPasswordModal("superadmin_accountManagement.html");
-            });
+        document.getElementById("accountManagementLink").addEventListener("click", function (event) {
+            event.preventDefault();
+            showPasswordModal("superadmin_accountManagement.html");
+        });
 
-            document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
-                event.preventDefault();
-                showPasswordModal("superadmin_accountSettings.html");
-                
-            });
+        document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
+            event.preventDefault();
+            showPasswordModal("superadmin_accountSettings.html");
 
-            document.getElementById("branchManagementLink").addEventListener("click", function (event) {
+        });
+
+        document.getElementById("branchManagementLink").addEventListener("click", function (event) {
             event.preventDefault();
             showPasswordModal("superadmin_branchmgmt.html");
-            });
+        });
 
         function showPasswordModal(redirectUrl) {
             const modal = document.getElementById("passwordModal");
@@ -145,17 +145,17 @@
 
             modal.style.display = "block";
 
-            closeBtn.onclick = function() {
+            closeBtn.onclick = function () {
                 modal.style.display = "none";
             }
 
-            window.onclick = function(event) {
+            window.onclick = function (event) {
                 if (event.target == modal) {
                     modal.style.display = "none";
                 }
             }
 
-            submitBtn.onclick = function() {
+            submitBtn.onclick = function () {
                 const password = document.getElementById("passwordInput").value;
                 if (password) {
                     fetch("verify_password.php", {
@@ -163,19 +163,19 @@
                         headers: { "Content-Type": "application/x-www-form-urlencoded" },
                         body: "password=" + encodeURIComponent(password)
                     })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            window.location.href = redirectUrl;
-                        } else {
-                            alert("Incorrect password. Please try again.");
-                        }
-                    })
-                    .catch(error => console.error("Error verifying password:", error));
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.location.href = redirectUrl;
+                            } else {
+                                alert("Incorrect password. Please try again.");
+                            }
+                        })
+                        .catch(error => console.error("Error verifying password:", error));
                 }
             }
         }
-     
+
     </script>
 </body>
 

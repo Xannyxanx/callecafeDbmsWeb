@@ -38,22 +38,43 @@ if (empty($branchName) || empty($name) || empty($email) || empty($password)) {
 // Hash the password
 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-// Insert the new branch and user
-$sql = "INSERT INTO users (name, email, password, branch) VALUES (?, ?, ?, ?)";
-$stmt = $conn->prepare($sql);
+// Insert the branch into the branches table
+$sqlBranch = "INSERT INTO branches (branch_name) VALUES (?)";
+$stmtBranch = $conn->prepare($sqlBranch);
 
-if (!$stmt) {
-    die(json_encode(["success" => false, "error" => "Prepare failed: " . $conn->error]));
+if (!$stmtBranch) {
+    die(json_encode(["success" => false, "error" => "Prepare failed for branches table: " . $conn->error]));
 }
 
-$stmt->bind_param("ssss", $name, $email, $hashedPassword, $branchName);
+$stmtBranch->bind_param("s", $branchName);
 
-if ($stmt->execute()) {
-    echo json_encode(["success" => true, "message" => "New branch added successfully."]);
+if (!$stmtBranch->execute()) {
+    // Check if the error is due to a duplicate entry
+    if ($conn->errno === 1062) { // Error code 1062 is for duplicate entry
+        die(json_encode(["success" => false, "error" => "Branch already exists."]));
+    } else {
+        die(json_encode(["success" => false, "error" => "Failed to add a new branch" . $stmtBranch->error]));
+    }
+}
+
+$stmtBranch->close();
+
+// Insert the new user into the users table
+$sqlUser = "INSERT INTO users (name, email, password, branch) VALUES (?, ?, ?, ?)";
+$stmtUser = $conn->prepare($sqlUser);
+
+if (!$stmtUser) {
+    die(json_encode(["success" => false, "error" => "Prepare failed for users table: " . $conn->error]));
+}
+
+$stmtUser->bind_param("ssss", $name, $email, $hashedPassword, $branchName);
+
+if ($stmtUser->execute()) {
+    echo json_encode(["success" => true, "message" => "New branch and user added successfully."]);
 } else {
-    echo json_encode(["success" => false, "error" => "Failed to add new branch: " . $stmt->error]);
+    echo json_encode(["success" => false, "error" => "Failed to add user to users table: " . $stmtUser->error]);
 }
 
-$stmt->close();
+$stmtUser->close();
 $conn->close();
 ?>

@@ -28,7 +28,7 @@
         <main class="main-content">
             <h2>Super Admin Discounted Customers</h2>
 
-            <form class="archive-form" action="#" method="get"> <!-- Database -->
+            <form class="archive-form" action="#" method="get" style="margin-right: 5%;"> <!-- Database -->
                 <div class="dropdown">
                     <select id="branchSelect">
                         <option value="all">All</option>
@@ -40,21 +40,21 @@
             <!-- TABLE-->
             <div>
                 <h3>Customers List</h3>
-                <table border="1" width="100%">
+                <table border="0.5" width="100%">
                     <thead>
                         <tr>
                             <th style="width: 12.5%;">ID NUMBER</th>
-                        <th style="width: 12.5%;">NAME</th>
-                        <th style="width: 8%;">CITIZEN</th>
-                        <th style="width: 10%;">FOOD</th>
-                        <th style="width: 6%;">DATE</th>
-                        <th style="width: 6%;">TIME</th>
-                        <th style="width: 10%;">CASHIER</th>
-                        <th style="width: 7.5%;">BRANCH</th>
-                        <th style="width: 5%;">DISC%</th>
-                        <th style="width: 5%;">PRICE</th>
-                        <th style="width: 5%;">TOTAL</th>
-                        <th style="width: 12.5%;">CONTROL #</th>
+                            <th style="width: 12.5%;">NAME</th>
+                            <th style="width: 8%;">CITIZEN</th>
+                            <th style="width: 10%;">FOOD</th>
+                            <th style="width: 6%;">DATE</th>
+                            <th style="width: 6%;">TIME</th>
+                            <th style="width: 10%;">CASHIER</th>
+                            <th style="width: 7.5%;">BRANCH</th>
+                            <th style="width: 5%;">DISC%</th>
+                            <th style="width: 5%;">PRICE</th>
+                            <th style="width: 5%;">TOTAL</th>
+                            <th style="width: 12.5%;">CONTROL #</th>
 
                         </tr>
                     </thead>
@@ -76,8 +76,8 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Enter Password</h2>
-            <input type="password" id="passwordInput" placeholder="Enter your password">
-            <button id="passwordSubmit">Submit</button>
+            <input class="modal-password-input" type="password" id="passwordInput" placeholder="Enter your password">
+            <button class="modal-password-btn" id="passwordSubmit">Submit</button>
         </div>
     </div>
 
@@ -210,15 +210,15 @@
             document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
                 event.preventDefault();
                 showPasswordModal("superadmin_accountSettings.html");
-                
+
             });
 
             document.getElementById("branchManagementLink").addEventListener("click", function (event) {
-            event.preventDefault();
-            showPasswordModal("superadmin_branchmgmt.html");
+                event.preventDefault();
+                showPasswordModal("superadmin_branchmgmt.html");
             });
 
-            
+
 
             function showPasswordModal(redirectUrl) {
                 const modal = document.getElementById("passwordModal");

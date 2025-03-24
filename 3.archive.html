@@ -27,6 +27,9 @@
             <h2>Archives</h2>
             <!-- FILTER FORM -->
             <form action="#" method="get" class="archive-form" id="archiveForm">
+                <label for="date-input" style="padding-right: 5px;"><strong>From</strong></label>
+                <input type="date" id="date" name="date" class="date-input">
+                <label for="date-input" style="padding-left: 5px; padding-right: 5px;"><strong>To</strong></label>
                 <input type="date" id="date" name="date" class="date-input">
                 <input type="search" id="search" name="query" placeholder="Search..." required>
             </form>
@@ -36,7 +39,7 @@
                 <h3>Archived Records</h3>
                 <table border="1" width="100%">
                     <tr>
-                          <th style="width: 12.5%;">ID NUMBER</th>
+                        <th style="width: 12.5%;">ID NUMBER</th>
                         <th style="width: 12.5%;">NAME</th>
                         <th style="width: 8%;">CITIZEN</th>
                         <th style="width: 10%;">FOOD</th>
@@ -62,64 +65,74 @@
                 </a>
             </div>
         </main>
-    </div>
-
-    <div id="passwordModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Enter Password</h2>
-            <input type="password" id="passwordInput" placeholder="Enter your password">
-            <button id="passwordSubmit">Submit</button>
         </div>
-    </div>
 
-    <div id="imageModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <img id="modalImage" src="" alt="ID Image" style="width: 100%;">
+        <div id="passwordModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Enter Password</h2>
+                <input class="modal-password-input" type="password" id="passwordInput"
+                    placeholder="Enter your password">
+                <button class="modal-password-btn" id="passwordSubmit">Submit</button>
+            </div>
         </div>
-    </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const today = new Date().toISOString().split('T')[0];
-            const dateInput = document.getElementById("date");
-            const searchInput = document.getElementById("search");
-            const tableBody = document.getElementById("archiveTableBody");
-            dateInput.value = today;
+        <div class="modal"> <!-- LOGOUT MODAL -->
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Are you sure?</h2>
+                <button>Yes</button>
+                <button>No</button>
+            </div>
+        </div>
 
-            // Function to fetch data based on date and search query
-            function fetchData() {
-                const date = dateInput.value.trim(); // The selected date (yyyy-mm-dd)
-                const query = searchInput.value.trim().toLowerCase(); // The search input value
+        <div id="imageModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <img id="modalImage" src="" alt="ID Image" style="width: 100%;">
+            </div>
+        </div>
 
-                if (!date) return; // Ensure a valid date is selected
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const today = new Date().toISOString().split('T')[0];
+                const dateInput = document.getElementById("date");
+                const searchInput = document.getElementById("search");
+                const tableBody = document.getElementById("archiveTableBody");
+                dateInput.value = today;
 
-                let url = `3.displayArchive.php?date=${date}`;
+                // Function to fetch data based on date and search query
+                function fetchData() {
+                    const date = dateInput.value.trim(); // The selected date (yyyy-mm-dd)
+                    const query = searchInput.value.trim().toLowerCase(); // The search input value
 
-                fetch(url)
-                    .then(response => response.json())
-                    .then(data => {
-                        tableBody.innerHTML = "";
+                    if (!date) return; // Ensure a valid date is selected
 
-                        if (data.length > 0) {
-                            let filteredData = data.filter(record =>
-                                record.ID.toString().includes(query) ||
-                                record.name.toLowerCase().includes(query) ||
-                                record.citizen.toLowerCase().includes(query) ||
-                                record.food.toLowerCase().includes(query) ||
-                                record.date.toLowerCase().includes(query) ||
-                                record.time.toLowerCase().includes(query) ||
-                                record.cashier.toLowerCase().includes(query) ||
-                                record.discount_percentage.toString().includes(query) ||
-                                record.price.toString().includes(query) ||
-                                record.total.toString().includes(query) ||
-                                record.control_number.toString().includes(query)
-                            );
+                    let url = `3.displayArchive.php?date=${date}`;
 
-                            if (filteredData.length > 0) {
-                                filteredData.forEach(record => {
-                                    let row = `
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            tableBody.innerHTML = "";
+
+                            if (data.length > 0) {
+                                let filteredData = data.filter(record =>
+                                    record.ID.toString().includes(query) ||
+                                    record.name.toLowerCase().includes(query) ||
+                                    record.citizen.toLowerCase().includes(query) ||
+                                    record.food.toLowerCase().includes(query) ||
+                                    record.date.toLowerCase().includes(query) ||
+                                    record.time.toLowerCase().includes(query) ||
+                                    record.cashier.toLowerCase().includes(query) ||
+                                    record.discount_percentage.toString().includes(query) ||
+                                    record.price.toString().includes(query) ||
+                                    record.total.toString().includes(query) ||
+                                    record.control_number.toString().includes(query)
+                                );
+
+                                if (filteredData.length > 0) {
+                                    filteredData.forEach(record => {
+                                        let row = `
                                         <tr>
                                             <td>${record.ID}</td>
                                             <td>${record.name}</td>
@@ -135,106 +148,106 @@
                                             <td>${record.control_number}</td>
                                         </tr>
                                     `;
-                                    tableBody.innerHTML += row;
-                                });
+                                        tableBody.innerHTML += row;
+                                    });
+                                } else {
+                                    tableBody.innerHTML = "<tr><td colspan='12'>No records found for the selected date.</td></tr>";
+                                }
                             } else {
                                 tableBody.innerHTML = "<tr><td colspan='12'>No records found for the selected date.</td></tr>";
                             }
-                        } else {
-                            tableBody.innerHTML = "<tr><td colspan='12'>No records found for the selected date.</td></tr>";
-                        }
-                    })
-                    .catch(error => console.error("Error fetching data:", error));
-            }
-
-            dateInput.addEventListener("change", fetchData);
-            searchInput.addEventListener("input", fetchData);
-            fetchData();
-
-            function showImageModal(imageData) {
-                const modal = document.getElementById("imageModal");
-                const modalImage = document.getElementById("modalImage");
-                const closeBtn = document.querySelector("#imageModal .close");
-
-                modalImage.src = `data:image/jpeg;base64,${imageData}`;
-                modal.style.display = "block";
-
-                closeBtn.onclick = function () {
-                    modal.style.display = "none";
-                }
-
-                window.onclick = function (event) {
-                    if (event.target == modal) {
-                        modal.style.display = "none";
-                    }
-                }
-            }
-
-            document.getElementById("exportBtn").addEventListener("click", function () {
-                const date = dateInput.value.trim();
-                const query = searchInput.value.trim();
-                let url = `3.DownloadExcel.php?date=${date}&query=${query}`;
-                window.location.href = url;
-            });
-
-            window.history.pushState(null, "", window.location.href);
-            window.onpopstate = function () {
-                window.history.pushState(null, "", window.location.href);
-            };
-
-            document.getElementById("logoutButton").addEventListener("click", function () {
-                window.location.href = "logout.php";
-            });
-
-            document.getElementById("accountManagementLink").addEventListener("click", function (event) {
-                event.preventDefault();
-                showPasswordModal("4.1account_management.html");
-            });
-
-            document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
-                event.preventDefault();
-                showPasswordModal("5.account_settings.html");
-            });
-
-            function showPasswordModal(redirectUrl) {
-                const modal = document.getElementById("passwordModal");
-                const closeBtn = document.querySelector(".close");
-                const submitBtn = document.getElementById("passwordSubmit");
-
-                modal.style.display = "block";
-
-                closeBtn.onclick = function () {
-                    modal.style.display = "none";
-                }
-
-                window.onclick = function (event) {
-                    if (event.target == modal) {
-                        modal.style.display = "none";
-                    }
-                }
-
-                submitBtn.onclick = function () {
-                    const password = document.getElementById("passwordInput").value;
-                    if (password) {
-                        fetch("verify_password.php", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                            body: "password=" + encodeURIComponent(password)
                         })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    window.location.href = redirectUrl;
-                                } else {
-                                    alert("Incorrect password. Please try again.");
-                                }
-                            })
-                            .catch(error => console.error("Error verifying password:", error));
+                        .catch(error => console.error("Error fetching data:", error));
+                }
+
+                dateInput.addEventListener("change", fetchData);
+                searchInput.addEventListener("input", fetchData);
+                fetchData();
+
+                function showImageModal(imageData) {
+                    const modal = document.getElementById("imageModal");
+                    const modalImage = document.getElementById("modalImage");
+                    const closeBtn = document.querySelector("#imageModal .close");
+
+                    modalImage.src = `data:image/jpeg;base64,${imageData}`;
+                    modal.style.display = "block";
+
+                    closeBtn.onclick = function () {
+                        modal.style.display = "none";
+                    }
+
+                    window.onclick = function (event) {
+                        if (event.target == modal) {
+                            modal.style.display = "none";
+                        }
                     }
                 }
-            }
-        });
-    </script>
+
+                document.getElementById("exportBtn").addEventListener("click", function () {
+                    const date = dateInput.value.trim();
+                    const query = searchInput.value.trim();
+                    let url = `3.DownloadExcel.php?date=${date}&query=${query}`;
+                    window.location.href = url;
+                });
+
+                window.history.pushState(null, "", window.location.href);
+                window.onpopstate = function () {
+                    window.history.pushState(null, "", window.location.href);
+                };
+
+                document.getElementById("logoutButton").addEventListener("click", function () {
+                    window.location.href = "logout.php";
+                });
+
+                document.getElementById("accountManagementLink").addEventListener("click", function (event) {
+                    event.preventDefault();
+                    showPasswordModal("4.1account_management.html");
+                });
+
+                document.getElementById("userAccountSettingsLink").addEventListener("click", function (event) {
+                    event.preventDefault();
+                    showPasswordModal("5.account_settings.html");
+                });
+
+                function showPasswordModal(redirectUrl) {
+                    const modal = document.getElementById("passwordModal");
+                    const closeBtn = document.querySelector(".close");
+                    const submitBtn = document.getElementById("passwordSubmit");
+
+                    modal.style.display = "block";
+
+                    closeBtn.onclick = function () {
+                        modal.style.display = "none";
+                    }
+
+                    window.onclick = function (event) {
+                        if (event.target == modal) {
+                            modal.style.display = "none";
+                        }
+                    }
+
+                    submitBtn.onclick = function () {
+                        const password = document.getElementById("passwordInput").value;
+                        if (password) {
+                            fetch("verify_password.php", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                                body: "password=" + encodeURIComponent(password)
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        window.location.href = redirectUrl;
+                                    } else {
+                                        alert("Incorrect password. Please try again.");
+                                    }
+                                })
+                                .catch(error => console.error("Error verifying password:", error));
+                        }
+                    }
+                }
+            });
+        </script>
 </body>
 
 </html>
