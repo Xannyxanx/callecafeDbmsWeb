@@ -38,6 +38,7 @@
                             <th style="width: 12.5%;">ID NUMBER</th>
                             <th style="width: 12.5%;">NAME</th>
                             <th style="width: 8%;">CITIZEN</th>
+                            <th style="width: 12%;">CITY</th>
                             <th style="width: 10%;">FOOD</th>
                             <th style="width: 6%;">DATE</th>
                             <th style="width: 6%;">TIME</th>
@@ -82,35 +83,50 @@
         </div>
     </div>
 
-    <div id="imageModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <img id="modalImage" src="" alt="ID Image" style="width: 100%;">
-        </div>
+    <div id="paginationControls" class="pagination-controls" style="margin-top: 20px; text-align: center;">
+        <button class="pagination-controls-button" id="prevPage" disabled>Previous</button>
+        <span id="pageInfo"></span>
+        <button class="pagination-controls-button" id="nextPage">Next</button>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            let customersData = []; // Store fetched data for search
+            const tableBody = document.getElementById("customerTableBody");
+            const paginationControls = document.getElementById("paginationControls");
+            const prevPageButton = document.getElementById("prevPage");
+            const nextPageButton = document.getElementById("nextPage");
+            const pageInfo = document.getElementById("pageInfo");
 
-            fetch("displayCustomers.php")
-                .then(response => response.json())
-                .then(data => {
-                    customersData = data; // Store data globally
-                    populateTable(customersData);
-                })
-                .catch(error => console.error("Error fetching customer data:", error));
+            let currentPage = 1;
 
-            function populateTable(data) {
-                let tableBody = document.getElementById("customerTableBody");
+            function fetchData(page = 1) {
+                let url = `displayCustomers.php?page=${page}`;
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.customers) {
+                            populateTable(data.customers);
+                            setupPagination(data.totalPages, data.currentPage);
+                        } else {
+                            tableBody.innerHTML = "<tr><td colspan='13'>No records found.</td></tr>";
+                            paginationControls.style.display = "none";
+                        }
+                    })
+                    .catch(error => console.error("Error fetching data:", error));
+            }
+
+            function populateTable(customers) {
                 tableBody.innerHTML = "";
 
-                data.forEach(customer => {
-                    let row = `
-                        <tr>
-                               <td>${customer.ID}</td>
+                if (customers.length > 0) {
+                    customers.forEach(customer => {
+                        let row = `
+                            <tr>
+                              <td>${customer.ID}</td>
                                 <td>${customer.name}</td>
                                 <td>${customer.citizen}</td>
+                                <td>${customer.city}</td>
                                 <td>${customer.food}</td>
                                 <td>${customer.date}</td>
                                 <td>${customer.time}</td>
@@ -120,11 +136,34 @@
                                 <td>${customer.price}</td>
                                 <td>${customer.discounted_price}</td>
                                 <td>${customer.control_number}</td>
-                        </tr>
-                    `;
-                    tableBody.innerHTML += row;
-                });
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row;
+                    });
+                } else {
+                    tableBody.innerHTML = "<tr><td colspan='13'>No records found.</td></tr>";
+                }
             }
+
+            function setupPagination(totalPages, currentPage) {
+                pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+                prevPageButton.disabled = currentPage === 1;
+                nextPageButton.disabled = currentPage === totalPages;
+
+                prevPageButton.onclick = () => {
+                    if (currentPage > 1) {
+                        fetchData(--currentPage);
+                    }
+                };
+
+                nextPageButton.onclick = () => {
+                    if (currentPage < totalPages) {
+                        fetchData(++currentPage);
+                    }
+                };
+            }
+
+            fetchData(currentPage);
 
             function showImageModal(imageData) {
                 const modal = document.getElementById("imageModal");
@@ -151,6 +190,7 @@
                     customer.ID.toString().includes(searchValue) ||
                     customer.name.toLowerCase().includes(searchValue) ||
                     customer.citizen.toLowerCase().includes(searchValue) ||
+                    customer.city.toLowerCase().includes(searchValue) ||
                     customer.food.toLowerCase().includes(searchValue) ||
                     customer.date.toLowerCase().includes(searchValue) ||
                     customer.time.toLowerCase().includes(searchValue) ||

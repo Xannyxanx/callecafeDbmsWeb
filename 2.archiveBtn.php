@@ -42,6 +42,7 @@ $sqlCreateTable = "
         ID VARCHAR(30) NOT NULL,
         name VARCHAR(150) NOT NULL,
         citizen VARCHAR(15) NOT NULL,
+        city VARCHAR(250) NOT NULL,
         food VARCHAR(80) NOT NULL,
         date DATE NOT NULL,
         time VARCHAR(15) NOT NULL,
@@ -61,19 +62,13 @@ if (!$connArchive->query($sqlCreateTable)) {
 // Add Debugging Statements: Log the SQL queries and any errors
 error_log("SQL Create Table: " . $sqlCreateTable);
 
-if ($branch == "Dapitan") {
+
     $sqlTransferData = "
-        INSERT INTO `$archiveDb`.`$tableName` (ID, name, citizen, food, date, time, cashier, branch, discount_percentage, price, discounted_price, control_number)
-        SELECT ID, name, citizen, food, date, time, cashier, branch, discount_percentage, price, discounted_price, control_number FROM `$customersDb`.`dapitancustomers`
-        WHERE branch = 'Dapitan'
+        INSERT INTO `$archiveDb`.`$tableName` (ID, name, city, citizen, food, date, time, cashier, branch, discount_percentage, price, discounted_price, control_number)
+        SELECT ID, name, citizen, city, food, date, time, cashier, branch, discount_percentage, price, discounted_price, control_number FROM `$customersDb`.`dapitancustomers`
+        WHERE branch = '$branch'
     ";
-} else if ($branch == "Espana") {
-    $sqlTransferData = "
-        INSERT INTO `$archiveDb`.`$tableName` (ID, name, citizen, food, date, time, cashier, branch, discount_percentage, price, discounted_price, control_number)
-        SELECT ID, name, citizen, food, date, time, cashier, branch, discount_percentage, price, discounted_price, control_number FROM `$customersDb`.`dapitancustomers`
-        WHERE branch = 'Espana'
-    ";
-}
+
 
 if (!$connArchive->query($sqlTransferData)) {
     die(json_encode(["status" => "error", "message" => "Error transferring data: " . $connArchive->error]));

@@ -78,6 +78,9 @@
 
             </div>
 
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                <button id="toggleColumnsBtn" class="toggle-columns-btn">Show All</button>
+            </div>
 
             <!-- TABLE -->
             <div>
@@ -86,26 +89,25 @@
                     <tr>
                     <tr>
 
-                        <th>NAME</th>
-                        <th style="width: 15%;">FOOD</th>
-                        <th style="width: 10%;">DATE</th>
-                        <th style="width: 10%;">TIME</th>
-                        <th style="width: 10%;">BRANCH</th>
-                        <th style="width: 10%;">TOTAL</th>
-                        <th style="width: 20%;">CONTROL #</th>
+                       <th class="default-column" style="width: 12.5%;">ID NUMBER</th>
+                        <th class="default-column" style="width: 12.5%;">NAME</th>
+                        <th class="optional-column" style="width: 8%;">CITIZEN</th>
+                        <th class="default-column" style="width: 12%;">CITY</th>
+                        <th class="default-column" style="width: 10%;">FOOD</th>
+                        <th class="optional-column" style="width: 6%;">DATE</th>
+                        <th class="optional-column" style="width: 6%;">TIME</th>
+                        <th class="optional-column" style="width: 10%;">CASHIER</th>
+                        <th class="default-column" style="width: 7.5%;">BRANCH</th>
+                        <th class="optional-column" style="width: 5%;">DISC%</th>
+                        <th class="optional-column" style="width: 5%;">PRICE</th>
+                        <th class="optional-column" style="width: 5%;">TOTAL</th>
+                        <th class="optional-column" style="width: 12.5%;">CONTROL #</th>
                     </tr>
 
                     </tr>
                     <tbody id="tableBody">
                     </tbody>
                 </table>
-
-                <!-- PAGINATION -->
-                <div id="paginationControls" class="pagination-controls">
-                    <button class="pagination-controls-button" id="prevPage" disabled>Previous</button>
-                    <span id="pageInfo"></span>
-                    <button class="pagination-controls-button" id="nextPage">Next</button>
-                </div>
 
             </div>
         </main>
@@ -135,8 +137,47 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             let pieChart, barChart;
-
+            const toggleColumnsBtn = document.getElementById("toggleColumnsBtn");
+            const optionalColumns = document.querySelectorAll('.optional-column');
             // Function to create the Pie Chart
+
+            function initializeTableColumns() {
+                optionalColumns.forEach(col => {
+                    col.style.display = 'none';
+                });
+                toggleColumnsBtn.textContent = 'Show All';
+            }
+
+            // Toggle column visibility
+            function toggleColumns() {
+                const showAll = toggleColumnsBtn.textContent === 'Show All';
+                
+                if (showAll) {
+                    optionalColumns.forEach(col => {
+                        col.style.display = '';
+                    });
+                    toggleColumnsBtn.textContent = 'Show Less';
+                } else {
+                    optionalColumns.forEach(col => {
+                        col.style.display = 'none';
+                    });
+                    toggleColumnsBtn.textContent = 'Show All';
+                }
+                
+                // Update existing rows
+                const optionalCells = document.querySelectorAll('#tableBody tr td.optional-column');
+                optionalCells.forEach(cell => {
+                    cell.style.display = showAll ? '' : 'none';
+                });
+            }
+
+            // Initialize the table columns on load
+            initializeTableColumns();
+
+            // Add event listener for the toggle button
+            toggleColumnsBtn.addEventListener('click', toggleColumns);  
+
+
             function createPieChart(data) {
                 const ctx = document.getElementById('myPieChart').getContext('2d');
                 if (pieChart) pieChart.destroy(); // Destroy existing chart if it exists
@@ -218,46 +259,49 @@
             fetch("1.recent_customers.php")
                 .then(response => response.json())
                 .then(data => {
-                    let tableBody = document.getElementById("tableBody");
-                    let totalCustomers = document.getElementById("totalCustomers");
-                    let totalSenior = document.getElementById("totalSenior");
-                    let totalPWD = document.getElementById("totalPWD");
+                let tableBody = document.getElementById("tableBody");
+                let totalCustomers = document.getElementById("totalCustomers");
+                let totalSenior = document.getElementById("totalSenior");
+                let totalPWD = document.getElementById("totalPWD");
 
-                    tableBody.innerHTML = "";
+                tableBody.innerHTML = "";
 
-                    let rows = "";
-                    data.customers.forEach(customer => {
-                        rows += `
-                    <tr>
-                        <td>${customer.ID}</td>
-                        <td>${customer.name}</td>
-                        <td>${customer.citizen}</td>
-                        <td>${customer.food}</td>
-                        <td>${customer.date}</td>
-                        <td>${customer.time}</td>
-                        <td>${customer.cashier}</td>
-                        <td>${customer.branch}</td>
-                        <td>${customer.discount_percentage}</td>
-                        <td>${customer.price}</td>
-                        <td>${customer.discounted_price}</td>
-                        <td>${customer.control_number}</td>
-                    </tr>
-                `;
-                    });
-                    tableBody.innerHTML = rows;
+                let rows = "";
+                data.customers.forEach(customer => {
+                    rows += `
+                        <tr>
+                            <td class="default-column">${customer.ID}</td>
+                            <td class="default-column">${customer.name}</td>
+                            <td class="optional-column">${customer.citizen}</td>
+                            <td class="default-column">${customer.city}</td>
+                            <td class="default-column">${customer.food}</td>
+                            <td class="optional-column">${customer.date}</td>
+                            <td class="optional-column">${customer.time}</td>
+                            <td class="optional-column">${customer.cashier}</td>
+                            <td class="default-column">${customer.branch}</td>
+                            <td class="optional-column">${customer.discount_percentage}</td>
+                            <td class="optional-column">${customer.price}</td>
+                            <td class="optional-column">${customer.discounted_price}</td>
+                            <td class="optional-column">${customer.control_number}</td>
+                        </tr>
+                    `;
+                });
+
+                tableBody.innerHTML = rows;
+                const optionalCells = document.querySelectorAll('#tableBody tr td.optional-column');
+                optionalCells.forEach(cell => {
+                    cell.style.display = toggleColumnsBtn.textContent === 'Show All' ? 'none' : '';
+                });
+
+                totalCustomers.textContent = data.totalDiscounted;
+                totalSenior.textContent = data.totalSenior;
+                totalPWD.textContent = data.totalPWD;
 
                     totalCustomers.textContent = data.totalDiscounted;
                     totalSenior.textContent = data.totalSenior;
                     totalPWD.textContent = data.totalPWD;
 
-                    // Add event listeners to image links
-                    document.querySelectorAll(".image-link").forEach(link => {
-                        link.addEventListener("click", function (event) {
-                            event.preventDefault();
-                            const imageData = this.getAttribute("data-image");
-                            showImageModal(imageData);
-                        });
-                    });
+
                 })
                 .catch(error => console.error("Error fetching customer data:", error));
         });
@@ -337,83 +381,6 @@
                 }
             }
         }
-
-        //PAGINATION
-        document.addEventListener("DOMContentLoaded", function () {
-            let page = 1; // Current page
-            const recordsPerPage = 10; // Number of records per page
-            let customersData = []; // Store all customers data
-
-            // Fetch and display recent customers
-            function fetchRecentCustomers() {
-                fetch("1.recent_customers.php")
-                    .then(response => response.json())
-                    .then(data => {
-                        customersData = data.customers;
-                        displayPage(page);
-                        document.getElementById("totalCustomers").textContent = data.totalDiscounted;
-                        document.getElementById("totalSenior").textContent = data.totalSenior;
-                        document.getElementById("totalPWD").textContent = data.totalPWD;
-                    })
-                    .catch(error => console.error("Error fetching customer data:", error));
-            }
-
-            // Display the correct page of customers
-            function displayPage(page) {
-                const startIndex = (page - 1) * recordsPerPage;
-                const endIndex = startIndex + recordsPerPage;
-                const currentCustomers = customersData.slice(startIndex, endIndex);
-
-                const tableBody = document.getElementById("tableBody");
-                tableBody.innerHTML = "";
-                currentCustomers.forEach(customer => {
-                    const row = `
-            <tr>
-                <td>${customer.ID}</td>
-                <td>${customer.name}</td>
-                <td>${customer.citizen}</td>
-                <td>${customer.food}</td>
-                <td>${customer.date}</td>
-                <td>${customer.time}</td>
-                <td>${customer.cashier}</td>
-                <td>${customer.branch}</td>
-                <td>${customer.discount_percentage}</td>
-                <td>${customer.price}</td>
-                <td>${customer.discounted_price}</td>
-                <td>${customer.control_number}</td>
-            </tr>
-            `;
-                    tableBody.innerHTML += row;
-                });
-
-                updatePaginationControls();
-            }
-
-            // Update pagination controls
-            function updatePaginationControls() {
-                document.getElementById("pageInfo").textContent = `Page ${page} of ${Math.ceil(customersData.length / recordsPerPage)}`;
-                document.getElementById("prevPage").disabled = page === 1;
-                document.getElementById("nextPage").disabled = page === Math.ceil(customersData.length / recordsPerPage);
-            }
-
-            // Event listeners for pagination
-            document.getElementById("prevPage").addEventListener("click", function () {
-                if (page > 1) {
-                    page--;
-                    displayPage(page);
-                }
-            });
-
-            document.getElementById("nextPage").addEventListener("click", function () {
-                if (page < Math.ceil(customersData.length / recordsPerPage)) {
-                    page++;
-                    displayPage(page);
-                }
-            });
-
-            // Fetch data on load
-            fetchRecentCustomers();
-        });
 
     </script>
 

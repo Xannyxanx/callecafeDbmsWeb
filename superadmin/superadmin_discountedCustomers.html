@@ -37,7 +37,12 @@
                 <input type="search" id="search" name="query" placeholder="Search..." required>
             </form>
 
-            <!-- TABLE-->
+            <!-- Show All Button -->
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                <button id="toggleColumnsBtn" class="toggle-columns-btn">Show All</button>
+            </div>
+
+            <!-- TABLE -->
             <div>
                 <h3>Customers List</h3>
                 <table border="0.5" width="100%">
@@ -46,6 +51,7 @@
                             <th style="width: 12.5%;">ID NUMBER</th>
                             <th style="width: 12.5%;">NAME</th>
                             <th style="width: 8%;">CITIZEN</th>
+                            <th style="width: 15%;">CITY</th>
                             <th style="width: 10%;">FOOD</th>
                             <th style="width: 6%;">DATE</th>
                             <th style="width: 6%;">TIME</th>
@@ -55,11 +61,10 @@
                             <th style="width: 5%;">PRICE</th>
                             <th style="width: 5%;">TOTAL</th>
                             <th style="width: 12.5%;">CONTROL #</th>
-
                         </tr>
                     </thead>
                     <tbody id="customerTableBody">
-
+                        <!-- Rows will be dynamically populated -->
                     </tbody>
                 </table>
             </div>
@@ -81,126 +86,66 @@
         </div>
     </div>
 
-    <div id="imageModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <img id="modalImage" src="" alt="ID Image" style="width: 100%;">
-        </div>
+    <div id="paginationControls" class="pagination-controls" style="margin-top: 20px; text-align: center;">
+        <button class="pagination-controls-button" id="prevPage" disabled>Previous</button>
+        <span id="pageInfo"></span>
+        <button class="pagination-controls-button" id="nextPage">Next</button>
     </div>
+
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            let customersData = []; // Store fetched data for search
-            const branchSelect = document.getElementById("branchSelect");
+            const tableBody = document.getElementById("customerTableBody");
+            const toggleColumnsBtn = document.getElementById("toggleColumnsBtn");
+            const archiveBtn = document.getElementById("archiveBtn");
+            const tableHeaders = document.querySelectorAll("table thead th");
+            let showAll = false; // Track the current state
 
-            fetch("superadmin_displayCustomers.php")
-                .then(response => response.json())
-                .then(data => {
-                    customersData = data.customers; // Store customer data globally
-                    populateTable(customersData);
-                    populateBranchDropdown(data.branches); // Populate the dropdown with branches
-                })
-                .catch(error => console.error("Error fetching customer data:", error));
-
-            function populateBranchDropdown(branches) {
-                branchSelect.innerHTML = `<option value="all">All</option>`;
-                branches.forEach(branch => {
-                    const option = document.createElement("option");
-                    option.value = branch.toLowerCase();
-                    option.textContent = branch;
-                    branchSelect.appendChild(option);
+            // Function to limit columns to "Show Less" by default
+            function applyShowLess() {
+                toggleColumnsBtn.textContent = "Show All";
+                tableHeaders.forEach((header, index) => {
+                    if (![0, 1, 3, 4, 8].includes(index)) {
+                        header.style.display = "none"; // Hide other headers
+                    }
                 });
-            }
-
-            function populateTable(data) {
-                let tableBody = document.getElementById("customerTableBody");
-                tableBody.innerHTML = "";
-
-                data.forEach(customer => {
-                    let row = `
-                        <tr>
-                            <td>${customer.ID}</td>
-                            <td>${customer.name}</td>
-                            <td>${customer.citizen}</td>
-                            <td>${customer.food}</td>
-                            <td>${customer.date}</td>
-                            <td>${customer.time}</td>
-                            <td>${customer.cashier}</td>
-                            <td>${customer.branch}</td>
-                            <td>${customer.discount_percentage}</td>
-                            <td>${customer.price}</td>
-                            <td>${customer.discounted_price}</td>
-                            <td>${customer.control_number}</td>
-                        </tr>
-                    `;
-                    tableBody.innerHTML += row;
-                });
-            }
-
-            branchSelect.addEventListener("change", function () {
-                const selectedBranch = this.value;
-
-                fetch(`superadmin_displayCustomers.php?branch=${selectedBranch}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        populateTable(data.customers);
-                    })
-                    .catch(error => console.error("Error fetching filtered data:", error));
-            });
-
-            // Search Functionality
-            document.getElementById("search").addEventListener("input", function () {
-                let searchValue = this.value.toLowerCase();
-                let filteredData = customersData.filter(customer =>
-                    customer.ID.toString().includes(searchValue) ||
-                    customer.name.toLowerCase().includes(searchValue) ||
-                    customer.citizen.toLowerCase().includes(searchValue) ||
-                    customer.food.toLowerCase().includes(searchValue) ||
-                    customer.date.toLowerCase().includes(searchValue) ||
-                    customer.time.toLowerCase().includes(searchValue) ||
-                    customer.cashier.toLowerCase().includes(searchValue) ||
-                    customer.discount_percentage.toString().includes(searchValue) ||
-                    customer.price.toString().includes(searchValue) ||
-                    customer.discounted_price.toString().includes(searchValue) ||
-                    customer.control_number.toString().includes(searchValue)
-                );
-
-                populateTable(filteredData);
-            });
-
-            document.getElementById("archiveBtn").addEventListener("click", function () {
-                if (confirm("Are you sure you want to archive today's data?")) {
-                    const selectedBranch = document.getElementById("branchSelect").value; // Get the selected branch
-
-                    var xhr = new XMLHttpRequest();
-                    xhr.open("POST", "2.archiveBtn.php", true);
-                    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                    xhr.onload = function () {
-                        if (xhr.status === 200) {
-                            const response = JSON.parse(xhr.responseText);
-                            if (response.status === "success") {
-                                alert(response.message);
-                                location.reload();
-                            } else {
-                                alert("Error: " + response.message);
-                            }
-                        } else {
-                            alert("Error archiving data.");
+                tableBody.querySelectorAll("tr").forEach(row => {
+                    row.querySelectorAll("td").forEach((cell, index) => {
+                        if (![0, 1, 3, 4, 8].includes(index)) {
+                            cell.style.display = "none"; // Hide other cells
                         }
-                    };
-                    // Send the selected branch as part of the POST request
-                    xhr.send("branch=" + encodeURIComponent(selectedBranch));
+                    });
+                });
+            }
+
+            // Function to show all columns
+            function applyShowAll() {
+                toggleColumnsBtn.textContent = "Show Less";
+                tableHeaders.forEach(header => {
+                    header.style.display = ""; // Show all headers
+                });
+                tableBody.querySelectorAll("tr").forEach(row => {
+                    row.querySelectorAll("td").forEach(cell => {
+                        cell.style.display = ""; // Show all cells
+                    });
+                });
+            }
+
+            // Toggle between "Show All" and "Show Less"
+            toggleColumnsBtn.addEventListener("click", function () {
+                showAll = !showAll; // Toggle the state
+                if (showAll) {
+                    applyShowAll();
+                } else {
+                    applyShowLess();
                 }
             });
 
-            document.getElementById("logoutButton").addEventListener("click", function () {
+
+
+              document.getElementById("logoutButton").addEventListener("click", function () {
                 window.location.href = "logout.php";
             });
-
-            window.history.pushState(null, "", window.location.href);
-            window.onpopstate = function () {
-                window.history.pushState(null, "", window.location.href);
-            };
 
             document.getElementById("accountManagementLink").addEventListener("click", function (event) {
                 event.preventDefault();
@@ -217,8 +162,6 @@
                 event.preventDefault();
                 showPasswordModal("superadmin_branchmgmt.html");
             });
-
-
 
             function showPasswordModal(redirectUrl) {
                 const modal = document.getElementById("passwordModal");
@@ -257,6 +200,136 @@
                     }
                 }
             }
+
+            document.getElementById("archiveBtn").addEventListener("click", function () {
+                if (confirm("Are you sure you want to archive today's data?")) {
+                    const selectedBranch = document.getElementById("branchSelect").value; // Get the selected branch
+
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("POST", "2.archiveBtn.php", true);
+                    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                    xhr.onload = function () {
+                        if (xhr.status === 200) {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.status === "success") {
+                                alert(response.message);
+                                location.reload();
+                            } else {
+                                alert("Error: " + response.message);
+                            }
+                        } else {
+                            alert("Error archiving data.");
+                        }
+                    };
+                    // Send the selected branch as part of the POST request
+                    xhr.send("branch=" + encodeURIComponent(selectedBranch));
+                }
+            });
+
+            let currentPage = 1;
+
+            function fetchBranches() {
+                fetch("superadmin_displayCustomers.php?fetchBranches=true")
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.branches) {
+                            populateBranchDropdown(data.branches);
+                        }
+                    })
+                    .catch(error => console.error("Error fetching branches:", error));
+            }
+
+            function populateBranchDropdown(branches) {
+                const branchSelect = document.getElementById("branchSelect");
+                branchSelect.innerHTML = `<option value="all">All</option>`;
+                branches.forEach(branch => {
+                    const option = document.createElement("option");
+                    option.value = branch.toLowerCase();
+                    option.textContent = branch;
+                    branchSelect.appendChild(option);
+                });
+            }
+
+            function fetchData(page = 1) {
+                const branch = document.getElementById("branchSelect").value;
+                const query = document.getElementById("search").value.trim().toLowerCase();
+
+                let url = `superadmin_displayCustomers.php?page=${page}&branch=${branch}&query=${query}`;
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.customers) {
+                            populateTable(data.customers);
+                            setupPagination(data.totalPages, data.currentPage);
+                            applyShowLess(); // Apply "Show Less" after populating the table
+                        } else {
+                            tableBody.innerHTML = "<tr><td colspan='13'>No records found.</td></tr>";
+                            document.getElementById("paginationControls").style.display = "none";
+                        }
+                    })
+                    .catch(error => console.error("Error fetching data:", error));
+            }
+
+            function populateTable(customers) {
+                tableBody.innerHTML = "";
+
+                if (customers.length > 0) {
+                    customers.forEach(customer => {
+                        let row = `
+                            <tr>
+                                <td>${customer.ID}</td>
+                                <td>${customer.name}</td>
+                                <td>${customer.citizen}</td>
+                                <td>${customer.city}</td>
+                                <td>${customer.food}</td>
+                                <td>${customer.date}</td>
+                                <td>${customer.time}</td>
+                                <td>${customer.cashier}</td>
+                                <td>${customer.branch}</td>
+                                <td>${customer.discount_percentage}</td>
+                                <td>${customer.price}</td>
+                                <td>${customer.discounted_price}</td>
+                                <td>${customer.control_number}</td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row;
+                    });
+                } else {
+                    tableBody.innerHTML = "<tr><td colspan='13'>No records found.</td></tr>";
+                }
+            }
+
+            function setupPagination(totalPages, currentPage) {
+                const pageInfo = document.getElementById("pageInfo");
+                const prevPageButton = document.getElementById("prevPage");
+                const nextPageButton = document.getElementById("nextPage");
+
+                pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+                prevPageButton.disabled = currentPage === 1;
+                nextPageButton.disabled = currentPage === totalPages;
+
+                prevPageButton.onclick = () => {
+                    if (currentPage > 1) {
+                        fetchData(--currentPage);
+                    }
+                };
+
+                nextPageButton.onclick = () => {
+                    if (currentPage < totalPages) {
+                        fetchData(++currentPage);
+                    }
+                };
+
+                document.getElementById("paginationControls").style.display = totalPages > 1 ? "block" : "none";
+            }
+
+            document.getElementById("branchSelect").addEventListener("change", () => fetchData(1));
+            document.getElementById("search").addEventListener("input", () => fetchData(1));
+
+            // Fetch branches and data on page load
+            fetchBranches();
+            fetchData(currentPage);
         });
     </script>
 </body>

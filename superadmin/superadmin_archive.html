@@ -26,7 +26,10 @@
 
         <!-- MAIN CONTENT -->
         <main class="main-content">
-            <h2>Archives</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>Archives</h2>
+                <button id="toggleColumnsBtn" style="margin-bottom: 10px;">Show All</button>
+            </div>
             <!-- FILTER FORM -->
             <form class="archive-form" action="#" method="get" style="margin-right: 5%;"> <!-- Database -->
                 <div class="dropdown">
@@ -37,32 +40,34 @@
                     </select>
                 </div>
 
-                <label for="date-input" style="padding-right: 5px; padding-left: 30px;"><strong>From</strong></label>
-                <input type="date" id="date" name="date" class="date-input">
-                <label for="date-input" style="padding-left: 5px; padding-right: 5px;"><strong>To</strong></label>
-                <input type="date" id="date" name="date" class="date-input">
+                <label for="fromDate" style="padding-right: 5px; padding-left: 30px;"><strong>From</strong></label>
+                <input type="date" id="fromDate" name="fromDate" class="date-input">
+                <label for="toDate" style="padding-left: 5px; padding-right: 5px;"><strong>To</strong></label>
+                <input type="date" id="toDate" name="toDate" class="date-input">
                 <input type="search" id="search" name="query" placeholder="Search..." required>
             </form>
 
             <!-- TABLE -->
             <div>
                 <h3>Archived Records</h3>
-                <table border="0.5" width="100%">
-                    <tr>
-                        <th style="width: 12.5%;">ID NUMBER</th>
-                        <th style="width: 12.5%;">NAME</th>
-                        <th style="width: 8%;">CITIZEN</th>
-                        <th style="width: 10%;">FOOD</th>
-                        <th style="width: 6%;">DATE</th>
-                        <th style="width: 6%;">TIME</th>
-                        <th style="width: 10%;">CASHIER</th>
-                        <th style="width: 7.5%;">BRANCH</th>
-                        <th style="width: 5%;">DISC%</th>
-                        <th style="width: 5%;">PRICE</th>
-                        <th style="width: 5%;">TOTAL</th>
-                        <th style="width: 12.5%;">CONTROL #</th>
-
-                    </tr>
+                <table border="0.5" width="100%" id="archiveTable">
+                    <thead>
+                        <tr>
+                            <th class="default-column" style="width: 12.5%;">ID NUMBER</th>
+                            <th class="default-column" style="width: 12.5%;">NAME</th>
+                            <th class="optional-column" style="width: 8%;">CITIZEN</th>
+                            <th class="default-column" style="width: 12%;">CITY</th>
+                            <th class="default-column" style="width: 10%;">FOOD</th>
+                            <th class="optional-column" style="width: 6%;">DATE</th>
+                            <th class="optional-column" style="width: 6%;">TIME</th>
+                            <th class="optional-column" style="width: 10%;">CASHIER</th>
+                            <th class="default-column" style="width: 7.5%;">BRANCH</th>
+                            <th class="optional-column" style="width: 5%;">DISC%</th>
+                            <th class="optional-column" style="width: 5%;">PRICE</th>
+                            <th class="optional-column" style="width: 5%;">TOTAL</th>
+                            <th class="optional-column" style="width: 12.5%;">CONTROL #</th>
+                        </tr>
+                    </thead>
                     <tbody id="archiveTableBody">
                     </tbody>
                 </table>
@@ -87,48 +92,107 @@
         </div>
     </div>
 
-    <div id="imageModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <img id="modalImage" src="" alt="ID Image" style="width: 100%;">
-        </div>
+    <div id="paginationControls" class="pagination-controls" style="margin-top: 20px; text-align: center;">
+        <button class="pagination-controls-button" id="prevPage" disabled>Previous</button>
+        <span id="pageInfo"></span>
+        <button class="pagination-controls-button" id="nextPage">Next</button>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const today = new Date().toISOString().split('T')[0];
-            const dateInput = document.getElementById("date");
+            const tableBody = document.getElementById("archiveTableBody");
+            const fromDateInput = document.getElementById("fromDate");
+            const toDateInput = document.getElementById("toDate");
             const searchInput = document.getElementById("search");
             const branchSelect = document.getElementById("branchSelect");
-            const tableBody = document.getElementById("archiveTableBody");
-            dateInput.value = today;
+            const paginationControls = document.getElementById("paginationControls");
+            const prevPageButton = document.getElementById("prevPage");
+            const nextPageButton = document.getElementById("nextPage");
+            const pageInfo = document.getElementById("pageInfo");
+            const toggleColumnsBtn = document.getElementById("toggleColumnsBtn");
+            const optionalColumns = document.querySelectorAll('.optional-column');
+            const table = document.getElementById('archiveTable');
 
-            let branchesLoaded = false; // Flag to ensure branches are only loaded once
+            let currentPage = 1;
+            let showAllColumns = false;
+            let showAllRecords = false;
+            let allRecords = [];
 
-            // Function to fetch data based on date, search query, and branch
-            function fetchData() {
-                const date = dateInput.value.trim(); // The selected date (yyyy-mm-dd)
-                const query = searchInput.value.trim().toLowerCase(); // The search input value
-                const branch = branchSelect.value; // The selected branch
+            // Initialize table to show less columns
+            function initializeTableColumns() {
+                optionalColumns.forEach(col => {
+                    col.style.display = 'none';
+                });
+                toggleColumnsBtn.textContent = 'Show All';
+                showAllColumns = false;
+                showAllRecords = false;
+                paginationControls.style.display = 'block';
+            }
 
-                if (!date) return; // Ensure a valid date is selected
+            // Toggle column visibility and records display
+            function toggleColumns() {
+                showAllColumns = !showAllColumns;
+                
+                if (showAllColumns) {
+                    optionalColumns.forEach(col => {
+                        col.style.display = '';
+                    });
+                    toggleColumnsBtn.textContent = 'Show Less';
+                } else {
+                    optionalColumns.forEach(col => {
+                        col.style.display = 'none';
+                    });
+                    toggleColumnsBtn.textContent = 'Show All';
+                }
+                
+                // Update column visibility for existing rows
+                const optionalCells = document.querySelectorAll('#archiveTableBody tr td.optional-column');
+                optionalCells.forEach(cell => {
+                    cell.style.display = showAllColumns ? '' : 'none';
+                });
+            }
 
-                let url = `superadmin_displayArchive.php?date=${date}&branch=${branch}&query=${query}`;
+
+            // Fetch all records without pagination
+            function fetchAllRecords() {
+                const fromDate = fromDateInput.value.trim();
+                const toDate = toDateInput.value.trim();
+                const query = searchInput.value.trim().toLowerCase();
+                const branch = branchSelect.value;
+
+                let url = `superadmin_displayArchive.php?fromDate=${fromDate}&toDate=${toDate}&branch=${branch}&query=${query}&allRecords=true`;
 
                 fetch(url)
                     .then(response => response.json())
                     .then(data => {
-                        if (!branchesLoaded) {
-                            populateBranchDropdown(data.branches); // Populate the dropdown with branches only once
-                            branchesLoaded = true;
+                        if (data.records) {
+                            allRecords = data.records;
+                            populateTable(allRecords);
+                        } else {
+                            tableBody.innerHTML = "<tr><td colspan='12'>No records found.</td></tr>";
                         }
-                        populateTable(data.records); // Populate the table with records
                     })
-                    .catch(error => console.error("Error fetching data:", error));
+                    .catch(error => console.error("Error fetching all records:", error));
+            }
+
+            // Set the date inputs to the current date
+            const today = new Date().toISOString().split("T")[0];
+            fromDateInput.value = today;
+            toDateInput.value = today;
+
+            // Fetch branches and populate the dropdown
+            function fetchBranches() {
+                fetch("superadmin_displayArchive.php?fetchBranches=true")
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.branches) {
+                            populateBranchDropdown(data.branches);
+                        }
+                    })
+                    .catch(error => console.error("Error fetching branches:", error));
             }
 
             function populateBranchDropdown(branches) {
-                const currentValue = branchSelect.value; // Preserve the current selected value
                 branchSelect.innerHTML = `<option value="all">All</option>`;
                 branches.forEach(branch => {
                     const option = document.createElement("option");
@@ -136,41 +200,121 @@
                     option.textContent = branch;
                     branchSelect.appendChild(option);
                 });
-                branchSelect.value = currentValue; // Restore the previously selected value
             }
 
-            function populateTable(data) {
+            function fetchData(page = 1) {
+                const fromDate = fromDateInput.value.trim();
+                const toDate = toDateInput.value.trim();
+                const query = searchInput.value.trim().toLowerCase();
+                const branch = branchSelect.value;
+
+                let url = `superadmin_displayArchive.php?fromDate=${fromDate}&toDate=${toDate}&branch=${branch}&query=${query}&page=${page}`;
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.records) {
+                            allRecords = data.records;
+                            populateTable(data.records);
+                            setupPagination(data.totalPages, data.currentPage);
+                        } else {
+                            tableBody.innerHTML = "<tr><td colspan='12'>No records found.</td></tr>";
+                            paginationControls.style.display = "none";
+                        }
+                    })
+                    .catch(error => console.error("Error fetching data:", error));
+            }
+
+            function populateTable(records) {
                 tableBody.innerHTML = "";
 
-                if (data.length > 0) {
-                    data.forEach(record => {
+                if (records.length > 0) {
+                    records.forEach(record => {
                         let row = `
                             <tr>
-                                <td>${record.ID}</td>
-                                <td>${record.name}</td>
-                                <td>${record.citizen}</td>
-                                <td>${record.food}</td>
-                                <td>${record.date}</td>
-                                <td>${record.time}</td>
-                                <td>${record.cashier}</td>
-                                <td>${record.branch}</td>
-                                <td>${record.discount_percentage}</td>
-                                <td>${record.price}</td>
-                                <td>${record.discounted_price}</td>
-                                <td>${record.control_number}</td>
+                                <td class="default-column">${record.ID}</td>
+                                <td class="default-column">${record.name}</td>
+                                <td class="optional-column">${record.citizen}</td>
+                                <td class="default-column">${record.city}</td>
+                                <td class="default-column">${record.food}</td>
+                                <td class="optional-column">${record.date}</td>
+                                <td class="optional-column">${record.time}</td>
+                                <td class="optional-column">${record.cashier}</td>
+                                <td class="default-column">${record.branch}</td>
+                                <td class="optional-column">${record.discount_percentage}</td>
+                                <td class="optional-column">${record.price}</td>
+                                <td class="optional-column">${record.discounted_price}</td>
+                                <td class="optional-column">${record.control_number}</td>
                             </tr>
                         `;
                         tableBody.innerHTML += row;
                     });
+                    
+                    // Apply column visibility to each row
+                    const optionalCells = document.querySelectorAll('#archiveTableBody tr td.optional-column');
+                    optionalCells.forEach(cell => {
+                        cell.style.display = showAllColumns ? '' : 'none';
+                    });
                 } else {
-                    tableBody.innerHTML = "<tr><td colspan='12'>No records found for the selected date.</td></tr>";
+                    tableBody.innerHTML = "<tr><td colspan='13'>No records found.</td></tr>";
                 }
             }
 
-            dateInput.addEventListener("change", fetchData);
-            searchInput.addEventListener("input", fetchData);
-            branchSelect.addEventListener("change", fetchData);
-            fetchData();
+            function setupPagination(totalPages, currentPage) {
+                pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+                prevPageButton.disabled = currentPage === 1 || totalPages === 0;
+                nextPageButton.disabled = currentPage === totalPages || totalPages === 0;
+
+                prevPageButton.onclick = () => {
+                    if (currentPage > 1) {
+                        fetchData(--currentPage);
+                    }
+                };
+
+                nextPageButton.onclick = () => {
+                    if (currentPage < totalPages) {
+                        fetchData(++currentPage);
+                    }
+                };
+
+                paginationControls.style.display = totalPages > 1 ? "block" : "none";
+            }
+
+            // Event listeners
+            fromDateInput.addEventListener("change", () => {
+                if (showAllRecords) {
+                    fetchAllRecords();
+                } else {
+                    fetchData(1);
+                }
+            });
+            toDateInput.addEventListener("change", () => {
+                if (showAllRecords) {
+                    fetchAllRecords();
+                } else {
+                    fetchData(1);
+                }
+            });
+            searchInput.addEventListener("input", () => {
+                if (showAllRecords) {
+                    fetchAllRecords();
+                } else {
+                    fetchData(1);
+                }
+            });
+            branchSelect.addEventListener("change", () => {
+                if (showAllRecords) {
+                    fetchAllRecords();
+                } else {
+                    fetchData(1);
+                }
+            });
+            toggleColumnsBtn.addEventListener("click", toggleColumns);
+
+            // Initialize
+            initializeTableColumns();
+            fetchBranches();
+            fetchData(currentPage);
 
             function showImageModal(imageData) {
                 const modal = document.getElementById("imageModal");
@@ -266,5 +410,4 @@
         });
     </script>
 </body>
-
 </html>

@@ -52,7 +52,7 @@ $counters = [
 
 if ($selectedBranch === 'all') {
     // Fetch all customers from all branches
-    $sqlTable = "SELECT ID, name, citizen, food, date, time, cashier, branch, discount_percentage, price, discounted_price, control_number 
+    $sqlTable = "SELECT ID, name, citizen, city, food, date, time, cashier, branch, discount_percentage, price, discounted_price, control_number 
                  FROM dapitancustomers
                  ORDER BY time DESC 
                  LIMIT 5";
@@ -64,7 +64,7 @@ if ($selectedBranch === 'all') {
         FROM dapitancustomers";
 } else {
     // Fetch customers for the selected branch
-    $sqlTable = "SELECT ID, name, citizen, food, date, time, cashier, branch, discount_percentage, price, discounted_price, control_number 
+    $sqlTable = "SELECT ID, name, citizen, city food, date, time, cashier, branch, discount_percentage, price, discounted_price, control_number 
                  FROM dapitancustomers
                  WHERE LOWER(branch) = ?
                  ORDER BY time DESC 
