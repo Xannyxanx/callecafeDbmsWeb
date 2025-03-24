@@ -35,23 +35,27 @@
             </form>
 
             <!-- TABLE -->
+
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                <button id="toggleColumnsBtn" class="toggle-columns-btn">Show All</button>
+            </div>
             <div>
                 <h3>Archived Records</h3>
                 <table border="1" width="100%">
                     <tr>
-                        <th style="width: 12.5%;">ID NUMBER</th>
-                        <th style="width: 12.5%;">NAME</th>
-                        <th style="width: 8%;">CITIZEN</th>
-                        <th style="width: 12%;">CITY</th>
-                        <th style="width: 10%;">FOOD</th>
-                        <th style="width: 6%;">DATE</th>
-                        <th style="width: 6%;">TIME</th>
-                        <th style="width: 10%;">CASHIER</th>
-                        <th style="width: 7.5%;">BRANCH</th>
-                        <th style="width: 5%;">DISC%</th>
-                        <th style="width: 5%;">PRICE</th>
-                        <th style="width: 5%;">TOTAL</th>
-                        <th style="width: 12.5%;">CONTROL #</th>
+                        <th class="default-column" style="width: 12.5%;">ID NUMBER</th>
+                        <th class="default-column" style="width: 12.5%;">NAME</th>
+                        <th class="optional-column" style="width: 8%;">CITIZEN</th>
+                        <th class="default-column" style="width: 12%;">CITY</th>
+                        <th class="default-column" style="width: 10%;">FOOD</th>
+                        <th class="optional-column" style="width: 6%;">DATE</th>
+                        <th class="optional-column" style="width: 6%;">TIME</th>
+                        <th class="optional-column" style="width: 10%;">CASHIER</th>
+                        <th class="default-column" style="width: 7.5%;">BRANCH</th>
+                        <th class="optional-column" style="width: 5%;">DISC%</th>
+                        <th class="optional-column" style="width: 5%;">PRICE</th>
+                        <th class="optional-column" style="width: 5%;">TOTAL</th>
+                        <th class="optional-column" style="width: 12.5%;">CONTROL #</th>
                     </tr>
                     <tbody id="archiveTableBody">
                     </tbody>
@@ -95,98 +99,145 @@
 
         <script>
             document.addEventListener("DOMContentLoaded", function () {
-                const tableBody = document.getElementById("archiveTableBody");
-                const fromDateInput = document.getElementById("fromDate");
-                const toDateInput = document.getElementById("toDate");
-                const searchInput = document.getElementById("search");
-                const paginationControls = document.getElementById("paginationControls");
-                const prevPageButton = document.getElementById("prevPage");
-                const nextPageButton = document.getElementById("nextPage");
-                const pageInfo = document.getElementById("pageInfo");
+        const tableBody = document.getElementById("archiveTableBody");
+        const fromDateInput = document.getElementById("fromDate");
+        const toDateInput = document.getElementById("toDate");
+        const searchInput = document.getElementById("search");
+        const paginationControls = document.getElementById("paginationControls");
+        const prevPageButton = document.getElementById("prevPage");
+        const nextPageButton = document.getElementById("nextPage");
+        const pageInfo = document.getElementById("pageInfo");
+        const toggleColumnsBtn = document.getElementById("toggleColumnsBtn");
+        const optionalColumns = document.querySelectorAll('.optional-column');
+        const defaultColumns = document.querySelectorAll('.default-column');
 
-                let currentPage = 1;
+        let currentPage = 1;
 
-                // Set the date inputs to the current date
-                const today = new Date().toISOString().split("T")[0];
-                fromDateInput.value = today;
-                toDateInput.value = today;
+        // Initialize table to show less columns by default
+        function initializeTableColumns() {
+            optionalColumns.forEach(col => {
+                col.style.display = 'none';
+            });
+            toggleColumnsBtn.textContent = 'Show All';
+        }
 
-                function fetchData(page = 1) {
-                    const fromDate = fromDateInput.value.trim();
-                    const toDate = toDateInput.value.trim();
-                    const query = searchInput.value.trim().toLowerCase();
+        // Toggle column visibility
+        function toggleColumns() {
+            const showAll = toggleColumnsBtn.textContent === 'Show All';
+            
+            if (showAll) {
+                optionalColumns.forEach(col => {
+                    col.style.display = '';
+                });
+                toggleColumnsBtn.textContent = 'Show Less';
+            } else {
+                optionalColumns.forEach(col => {
+                    col.style.display = 'none';
+                });
+                toggleColumnsBtn.textContent = 'Show All';
+            }
+            
+            // Update existing rows
+            const optionalCells = document.querySelectorAll('#archiveTableBody tr td.optional-column');
+            optionalCells.forEach(cell => {
+                cell.style.display = showAll ? '' : 'none';
+            });
+        }
 
-                    let url = `3.displayArchive.php?fromDate=${fromDate}&toDate=${toDate}&query=${query}&page=${page}`;
+        // Initialize the table columns on load
+        initializeTableColumns();
 
-                    fetch(url)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.records) {
-                                populateTable(data.records);
-                                setupPagination(data.totalPages, data.currentPage);
-                            } else {
-                                tableBody.innerHTML = "<tr><td colspan='12'>No records found.</td></tr>";
-                                paginationControls.style.display = "none";
-                            }
-                        })
-                        .catch(error => console.error("Error fetching data:", error));
-                }
+        // Add event listener for the toggle button
+        toggleColumnsBtn.addEventListener('click', toggleColumns);
 
-                function populateTable(records) {
-                    tableBody.innerHTML = "";
+        // Set the date inputs to the current date
+        const today = new Date().toISOString().split("T")[0];
+        fromDateInput.value = today;
+        toDateInput.value = today;
 
-                    if (records.length > 0) {
-                        records.forEach(record => {
-                            let row = `
-                                <tr>
-                                    <td>${record.ID}</td>
-                                    <td>${record.name}</td>
-                                    <td>${record.citizen}</td>
-                                    <td>${record.city}</td>
-                                    <td>${record.food}</td>
-                                    <td>${record.date}</td>
-                                    <td>${record.time}</td>
-                                    <td>${record.cashier}</td>
-                                    <td>${record.branch}</td>
-                                    <td>${record.discount_percentage}</td>
-                                    <td>${record.price}</td>
-                                    <td>${record.discounted_price}</td>
-                                    <td>${record.control_number}</td>
-                                </tr>
-                            `;
-                            tableBody.innerHTML += row;
-                        });
+        function fetchData(page = 1) {
+            const fromDate = fromDateInput.value.trim();
+            const toDate = toDateInput.value.trim();
+            const query = searchInput.value.trim().toLowerCase();
+
+            let url = `3.displayArchive.php?fromDate=${fromDate}&toDate=${toDate}&query=${query}&page=${page}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.records) {
+                        populateTable(data.records);
+                        setupPagination(data.totalPages, data.currentPage);
                     } else {
-                        tableBody.innerHTML = "<tr><td colspan='12'>No records found.</td></tr>";
+                        tableBody.innerHTML = "<tr><td colspan='13'>No records found.</td></tr>";
+                        paginationControls.style.display = "none";
                     }
+                })
+                .catch(error => console.error("Error fetching data:", error));
+        }
+
+        function populateTable(records) {
+            tableBody.innerHTML = "";
+
+            if (records.length > 0) {
+                records.forEach(record => {
+                    let row = `
+                        <tr>
+                            <td class="default-column">${record.ID}</td>
+                            <td class="default-column">${record.name}</td>
+                            <td class="optional-column">${record.citizen}</td>
+                            <td class="default-column">${record.city}</td>
+                            <td class="default-column">${record.food}</td>
+                            <td class="optional-column">${record.date}</td>
+                            <td class="optional-column">${record.time}</td>
+                            <td class="optional-column">${record.cashier}</td>
+                            <td class="default-column">${record.branch}</td>
+                            <td class="optional-column">${record.discount_percentage}</td>
+                            <td class="optional-column">${record.price}</td>
+                            <td class="optional-column">${record.discounted_price}</td>
+                            <td class="optional-column">${record.control_number}</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+                
+                // Apply column visibility to new rows
+                const optionalCells = document.querySelectorAll('#archiveTableBody tr td.optional-column');
+                const shouldHide = toggleColumnsBtn.textContent === 'Show All';
+                optionalCells.forEach(cell => {
+                    cell.style.display = shouldHide ? 'none' : '';
+                });
+            } else {
+                tableBody.innerHTML = "<tr><td colspan='13'>No records found.</td></tr>";
+            }
+        }
+
+        function setupPagination(totalPages, currentPage) {
+            pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+            prevPageButton.disabled = currentPage === 1 || totalPages === 0;
+            nextPageButton.disabled = currentPage === totalPages || totalPages === 0;
+
+            prevPageButton.onclick = () => {
+                if (currentPage > 1) {
+                    fetchData(--currentPage);
                 }
+            };
 
-                function setupPagination(totalPages, currentPage) {
-                pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-                prevPageButton.disabled = currentPage === 1 || totalPages === 0;
-                nextPageButton.disabled = currentPage === totalPages || totalPages === 0;
+            nextPageButton.onclick = () => {
+                if (currentPage < totalPages) {
+                    fetchData(++currentPage);
+                }
+            };
 
-                 prevPageButton.onclick = () => {
-                  if (currentPage > 1) {
-                  fetchData(--currentPage);
-                  }
-                     };
+            paginationControls.style.display = totalPages > 1 ? "block" : "none";
+        }
 
-                   nextPageButton.onclick = () => {
-                    if (currentPage < totalPages) {
-                        fetchData(++currentPage);
-                    }
-                };
+        fromDateInput.addEventListener("change", () => fetchData(1));
+        toDateInput.addEventListener("change", () => fetchData(1));
+        searchInput.addEventListener("input", () => fetchData(1));
 
-    paginationControls.style.display = totalPages > 1 ? "block" : "none";
-}
-
-                fromDateInput.addEventListener("change", () => fetchData(1));
-                toDateInput.addEventListener("change", () => fetchData(1));
-                searchInput.addEventListener("input", () => fetchData(1));
-
-                // Fetch data for the current date range on page load
-                fetchData(currentPage);
+        // Fetch data for the current date range on page load
+        fetchData(currentPage);
 
                 function showImageModal(imageData) {
                     const modal = document.getElementById("imageModal");
