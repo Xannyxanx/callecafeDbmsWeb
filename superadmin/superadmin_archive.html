@@ -75,7 +75,7 @@
 
             <!-- EXCEL BUTTON -->
             <div style="display: flex; justify-content: center; margin-top: 20px;">
-                <a href="#" id="exportBtn" class="download-btn" style="display: flex; align-items: center;">
+                <a href="#" id="exportPdfBtn" class="download-btn" style="display: flex; align-items: center;">
                     <img src="./admin_images/excel.png" alt="excelIcon" class="icon" style="margin-right: 5px;" />
                     Download Excel
                 </a>
@@ -335,13 +335,20 @@
                 }
             }
 
-            document.getElementById("exportBtn").addEventListener("click", function () {
-                const date = document.getElementById("date").value.trim(); // Get the selected date
+            document.getElementById("exportPdfBtn").addEventListener("click", function () {
+                const fromDate = document.getElementById("fromDate").value.trim(); // Get the "from" date
+                const toDate = document.getElementById("toDate").value.trim(); // Get the "to" date
                 const branch = document.getElementById("branchSelect").value; // Get the selected branch
                 const query = document.getElementById("search").value.trim(); // Get the search query (optional)
 
-                // Construct the URL with the selected branch, date, and query
-                let url = `3.DownloadExcel.php?date=${encodeURIComponent(date)}&branch=${encodeURIComponent(branch)}&query=${encodeURIComponent(query)}`;
+                // Validate that both dates are provided
+                if (!fromDate || !toDate) {
+                    alert("Please select both 'From' and 'To' dates.");
+                    return;
+                }
+
+                // Construct the URL with the selected branch, dates, and query
+                let url = `3.DownloadPDF.php?fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}&branch=${encodeURIComponent(branch)}&query=${encodeURIComponent(query)}`;
                 window.location.href = url; // Redirect to the download URL
             });
 

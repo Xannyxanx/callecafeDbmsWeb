@@ -71,6 +71,10 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
+            document.getElementById("logoutButton").addEventListener("click", function () {
+            window.location.href = "logout.php";
+             });
+
             document.getElementById("accountManagementLink").addEventListener("click", function (event) {
                 event.preventDefault();
                 showPasswordModal("superadmin_accountManagement.html");

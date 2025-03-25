@@ -20,46 +20,44 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Get branch filter parameter, default to 'all'
+// Get branch and status filter parameters
 $branch = isset($_GET['branch']) ? strtolower(trim($_GET['branch'])) : 'all';
+$status = isset($_GET['status']) ? strtolower(trim($_GET['status'])) : 'active'; // Default to 'active'
 
-// Build the SQL query based on the branch filter
-if ($branch === 'all') {
-    // When 'all' is selected, fetch all users
+// Build the SQL query based on the filters
+if ($branch === 'all' && $status === 'all') {
+    // Fetch all users when no filters are applied
     $sql = "SELECT * FROM cashier_users";
-} else {
-    // When a specific branch is selected
+    $stmt = $conn->prepare($sql);
+} elseif ($branch === 'all') {
+    // Fetch users based on status only
+    $sql = "SELECT * FROM cashier_users WHERE LOWER(status) = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $status);
+} elseif ($status === 'all') {
+    // Fetch users based on branch only
     $sql = "SELECT * FROM cashier_users WHERE LOWER(branch) = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $branch);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $users = [];
-    
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            $users[] = $row;
-        }
-    }
-    
-    $stmt->close();
-    $conn->close();
-    
-    header('Content-Type: application/json');
-    echo json_encode($users);
-    exit();
+} else {
+    // Fetch users based on both branch and status
+    $sql = "SELECT * FROM cashier_users WHERE LOWER(branch) = ? AND LOWER(status) = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ss", $branch, $status);
 }
 
-// For 'all' option, use direct query
-$result = $conn->query($sql);
-$users = [];
+// Execute the query
+$stmt->execute();
+$result = $stmt->get_result();
 
+$users = [];
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         $users[] = $row;
     }
 }
 
+$stmt->close();
 $conn->close();
 
 header('Content-Type: application/json');

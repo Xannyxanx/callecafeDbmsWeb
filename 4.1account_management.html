@@ -30,10 +30,10 @@
                     <button type="button" id="requestsBtn" class="registered-btn">USER REQUESTS</button>
                 </a>
                 <div class="dropdown" style="padding-left: 22px;">
-                    <select id="#">
-                        <option value="#">Active</option>
-                        <option value="#" style="color: red;">Inactive</option>
-                        <option value="#">All</option>
+                    <select id="statusFilter">
+                        <option value="active">Active</option>
+                        <option value="inactive" style="color: red;">Inactive</option>
+                        <option value="all">All</option>
                     </select>
                 </div>
                 <input type="search" id="search" name="query" placeholder="Search..." required>
@@ -48,6 +48,7 @@
                         <th>NAME</th>
                         <th>USERNAME</th>
                         <th style="width: 15%;">PIN</th>
+                        <th style="width: 15%;">STATUS</th>
                         <th style="width: 15%;">Actions</th>
                     </tr>
                     <tbody id="tableBody">
@@ -80,14 +81,27 @@
             document.addEventListener("DOMContentLoaded", function () {
                 let usersData = [];
 
-                fetch("4.1accountManagement.php")
-                    .then(response => response.json())
-                    .then(data => {
-                        usersData = data;
-                        populateTable(usersData);
-                    })
-                    .catch(error => console.error("Error fetching user data:", error));
+                // Fetch initial data: All users with active status
+                loadUserData("active");
 
+                // Add event listener to status filter
+                document.getElementById("statusFilter").addEventListener("change", function () {
+                    const selectedStatus = this.value.toLowerCase();
+                    loadUserData(selectedStatus);
+                });
+
+                // Function to load user data by status
+                function loadUserData(status) {
+                    fetch(`4.1accountManagement.php?status=${status}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            usersData = data;
+                            populateTable(usersData);
+                        })
+                        .catch(error => console.error("Error fetching user data:", error));
+                }
+
+                // Populate table with data
                 function populateTable(data) {
                     let tableBody = document.getElementById("tableBody");
                     tableBody.innerHTML = "";
@@ -109,6 +123,10 @@
                         pinCell.textContent = user.pin;
                         pinCell.setAttribute("data-pin-id", user.ID);
 
+                        let statusCell = document.createElement("td");
+                        statusCell.textContent = user.status;
+                        statusCell.setAttribute("data-status-id", user.ID);
+
                         let actionCell = document.createElement("td");
                         actionCell.style.textAlign = "center";
 
@@ -119,7 +137,7 @@
                         editBtn.addEventListener("click", function () {
                             editUser(this.getAttribute("data-id"));
                         });
-
+                        /*
                         let deleteBtn = document.createElement("button");
                         deleteBtn.classList.add("action-btn", "decline-btn");
                         deleteBtn.innerHTML = `<img src="images/decline.png" alt="Decline" class="icon">`;
@@ -127,13 +145,13 @@
                         deleteBtn.addEventListener("click", function () {
                             deleteUser(this.getAttribute("data-id"));
                         });
-
+                        */
                         let buttonContainer = document.createElement("div");
                         buttonContainer.classList.add("action-buttons");
                         buttonContainer.style.display = "flex";
                         buttonContainer.style.gap = "5px";
                         buttonContainer.appendChild(editBtn);
-                        buttonContainer.appendChild(deleteBtn);
+                       // buttonContainer.appendChild(deleteBtn);
 
                         actionCell.appendChild(buttonContainer);
 
@@ -141,6 +159,7 @@
                         row.appendChild(nameCell);
                         row.appendChild(usernameCell);
                         row.appendChild(pinCell);
+                        row.appendChild(statusCell);
                         row.appendChild(actionCell);
 
                         tableBody.appendChild(row);
@@ -154,8 +173,19 @@
                     let pinCell = document.querySelector(`td[data-pin-id='${userID}']`);
                     let currentPin = pinCell.textContent;
 
+                    let statusCell = document.querySelector(`td[data-status-id='${userID}']`);
+                    let currentStatus = statusCell.textContent;
+
                     usernameCell.innerHTML = `<input type="text" value="${currentUsername}" id="editUsername-${userID}">`;
                     pinCell.innerHTML = `<input type="text" value="${currentPin}" id="editPin-${userID}">`;
+
+                    statusCell.innerHTML = `
+                    <select id="editStatus-${userID}">
+                        <option value="Active" ${currentStatus === "Active" ? "selected" : ""}>Active</option>
+                        <option value="Inactive" ${currentStatus === "Inactive" ? "selected" : ""}>Inactive</option>
+                    </select>
+                      `;
+
 
                     let saveBtn = document.createElement("button");
                     saveBtn.classList.add("action-btn", "save-btn");
@@ -172,11 +202,13 @@
                 function saveUser(userID) {
                     let newUsername = document.getElementById(`editUsername-${userID}`).value;
                     let newPin = document.getElementById(`editPin-${userID}`).value;
+                    let newStatus = document.getElementById(`editStatus-${userID}`).value;
+
 
                     fetch("4.1.update.php", {
                         method: "POST",
                         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                        body: "id=" + encodeURIComponent(userID) + "&username=" + encodeURIComponent(newUsername) + "&pin=" + encodeURIComponent(newPin)
+                        body: "id=" + encodeURIComponent(userID) + "&username=" + encodeURIComponent(newUsername) + "&pin=" + encodeURIComponent(newPin) + "&status=" + encodeURIComponent(newStatus)
                     })
                         .then(response => response.json())
                         .then(data => {
@@ -191,7 +223,7 @@
                         })
                         .catch(error => console.error("Error updating user:", error));
                 }
-
+                /*
                 function deleteUser(userID) {
                     if (!userID) {
                         alert("Error: No user ID found.");
@@ -223,7 +255,7 @@
                         })
                         .catch(error => console.error("Error deleting user:", error));
                 }
-
+                */
                 document.getElementById("accountManagementLink").addEventListener("click", function (event) {
                     event.preventDefault();
                     showPasswordModal("4.1account_management.html");

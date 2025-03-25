@@ -64,7 +64,7 @@
 
             <!-- EXCEL BUTTON -->
             <div style="display: flex; justify-content: center; margin-top: 20px;">
-                <a href="#" id="exportBtn" class="download-btn" style="display: flex; align-items: center;">
+                <a href="#" id="exportPdfBtn" class="download-btn" style="display: flex; align-items: center;">
                     <img src="images/excel.png" alt="excelIcon" class="icon" style="margin-right: 5px;" />
                     Download Excel
                 </a>
@@ -258,12 +258,21 @@
                     }
                 }
 
-                document.getElementById("exportBtn").addEventListener("click", function () {
-                    const date = dateInput.value.trim();
-                    const query = searchInput.value.trim();
-                    let url = `3.DownloadExcel.php?date=${date}&query=${query}`;
-                    window.location.href = url;
-                });
+                document.getElementById("exportPdfBtn").addEventListener("click", function () {
+                const fromDate = document.getElementById("fromDate").value.trim(); // Get the "from" date
+                const toDate = document.getElementById("toDate").value.trim(); // Get the "to" date
+                const query = document.getElementById("search").value.trim(); // Get the search query (optional)
+
+                // Validate that both dates are provided
+                if (!fromDate || !toDate) {
+                    alert("Please select both 'From' and 'To' dates.");
+                    return;
+                }
+
+                // Construct the URL with the selected branch, dates, and query
+                let url = `3.DownloadPDF.php?fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}&query=${encodeURIComponent(query)}`;
+                window.location.href = url; // Redirect to the download URL
+            });
 
                 window.history.pushState(null, "", window.location.href);
                 window.onpopstate = function () {

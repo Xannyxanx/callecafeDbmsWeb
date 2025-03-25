@@ -39,10 +39,10 @@
                     </select>
                 </div>
                 <div class="dropdown">
-                    <select id="#">
-                        <option value="#">Active</option>
-                        <option value="#" style="color: red;">Inactive</option>
-                        <option value="#">All</option>
+                    <select id="statusFilter">
+                        <option value="active">Active</option>
+                        <option value="inactive" style="color: red;">Inactive</option>
+                        <option value="all">All</option>
                     </select>
                 </div>
 
@@ -59,6 +59,7 @@
                         <th style="width: 10%;">BRANCH</th>
                         <th>USERNAME</th>
                         <th style="width: 15%;">PIN</th>
+                        <th style="width: 15%;">STATUS</th>
                         <th style="width: 15%;">Actions</th>
                     </tr>
                     <tbody id="tableBody">
@@ -83,9 +84,124 @@
         document.addEventListener("DOMContentLoaded", function () {
             let usersData = [];
 
+            // Fetch available branches first
+            fetch("get_branch_user.php")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        populateBranchDropdown(data.branches);
+                    } else {
+                        console.error("Error fetching branches:", data.error);
+                    }
+                })
+                .catch(error => console.error("Error fetching branches:", error));
 
+            // Initial data load: All branches and active users
+            loadUserData("all", "active");
 
+            // Function to populate branch dropdown
+            function populateBranchDropdown(branches) {
+                const branchFilter = document.getElementById("branchFilter");
+                branchFilter.innerHTML = '<option value="all">All</option>';
 
+                branches.forEach(branch => {
+                    const option = document.createElement("option");
+                    option.value = branch.toLowerCase();
+                    option.textContent = branch.charAt(0).toUpperCase() + branch.slice(1);
+                    branchFilter.appendChild(option);
+                });
+
+                branchFilter.addEventListener("change", function () {
+                    const selectedBranch = this.value.toLowerCase();
+                    const selectedStatus = document.getElementById("statusFilter").value.toLowerCase();
+                    loadUserData(selectedBranch, selectedStatus);
+                });
+            }
+
+            // Add event listener to status filter
+            document.getElementById("statusFilter").addEventListener("change", function () {
+                const selectedStatus = this.value.toLowerCase();
+                const selectedBranch = document.getElementById("branchFilter").value.toLowerCase();
+                loadUserData(selectedBranch, selectedStatus);
+            });
+
+            // Function to load user data by branch and status
+            function loadUserData(branch, status) {
+                fetch(`superadmin_accountManagement.php?branch=${branch}&status=${status}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        usersData = data;
+                        populateTable(usersData);
+                    })
+                    .catch(error => console.error("Error fetching user data:", error));
+            }
+
+            // Populate table with data
+            function populateTable(data) {
+                let tableBody = document.getElementById("tableBody");
+                tableBody.innerHTML = "";
+
+                data.forEach(user => {
+                    let row = document.createElement("tr");
+
+                    let idCell = document.createElement("td");
+                    idCell.textContent = user.ID;
+
+                    let nameCell = document.createElement("td");
+                    nameCell.textContent = user.name;
+
+                    let branchCell = document.createElement("td");
+                    branchCell.textContent = user.branch;
+                    branchCell.setAttribute("data-branch-id", user.ID);
+
+                    let usernameCell = document.createElement("td");
+                    usernameCell.textContent = user.username;
+                    usernameCell.setAttribute("data-username-id", user.ID);
+
+                    let pinCell = document.createElement("td");
+                    pinCell.textContent = user.pin;
+                    pinCell.setAttribute("data-pin-id", user.ID);
+
+                    let statusCell = document.createElement("td");
+                    statusCell.textContent = user.status;
+                    statusCell.setAttribute("data-status-id", user.ID);
+
+                    let actionCell = document.createElement("td");
+                    actionCell.style.textAlign = "center";
+
+                    let editBtn = document.createElement("button");
+                    editBtn.classList.add("action-btn", "approve-btn");
+                    editBtn.innerHTML = `<img src="admin_images/edit.png" alt="Edit" class="icon">`;
+                    editBtn.setAttribute("data-id", user.ID);
+                    editBtn.addEventListener("click", function () {
+                        editUser(this.getAttribute("data-id"));
+                    });
+
+            
+
+                    let buttonContainer = document.createElement("div");
+                    buttonContainer.classList.add("action-buttons");
+                    buttonContainer.style.display = "flex";
+                    buttonContainer.style.gap = "5px";
+                    buttonContainer.appendChild(editBtn);
+
+                    actionCell.appendChild(buttonContainer);
+
+                    row.appendChild(idCell);
+                    row.appendChild(nameCell);
+                    row.appendChild(branchCell);
+                    row.appendChild(usernameCell);
+                    row.appendChild(pinCell);
+                    row.appendChild(statusCell);
+                    row.appendChild(actionCell);
+
+                    tableBody.appendChild(row);
+                });
+            }
+
+            document.getElementById("logoutButton").addEventListener("click", function () {
+            window.location.href = "logout.php";
+            });
 
             document.getElementById("accountManagementLink").addEventListener("click", function (event) {
                 event.preventDefault();
@@ -143,119 +259,6 @@
                 }
             }
 
-
-            // Fetch available branches first
-            fetch("get_branch_user.php")
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        populateBranchDropdown(data.branches);
-                    } else {
-                        console.error("Error fetching branches:", data.error);
-                    }
-                })
-                .catch(error => console.error("Error fetching branches:", error));
-
-            // Initial data load
-            loadUserData("all");
-
-            // Function to populate branch dropdown
-            function populateBranchDropdown(branches) {
-                const branchFilter = document.getElementById("branchFilter");
-                // Clear existing options except "All"
-                branchFilter.innerHTML = '<option value="all">All</option>';
-
-                // Add branches from database
-                branches.forEach(branch => {
-                    const option = document.createElement("option");
-                    option.value = branch.toLowerCase();
-                    option.textContent = branch.charAt(0).toUpperCase() + branch.slice(1);
-                    branchFilter.appendChild(option);
-                });
-
-                // Add event listener to the populated dropdown
-                branchFilter.addEventListener("change", function () {
-                    const selectedBranch = this.value.toLowerCase();
-                    loadUserData(selectedBranch);
-                });
-            }
-
-            // Function to load user data by branch
-            function loadUserData(branch) {
-                fetch(`superadmin_accountManagement.php?branch=${branch}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        usersData = data;
-                        populateTable(usersData);
-                    })
-                    .catch(error => console.error("Error fetching user data:", error));
-            }
-
-            // Populate table with data
-            function populateTable(data) {
-                let tableBody = document.getElementById("tableBody");
-                tableBody.innerHTML = "";
-
-                data.forEach(user => {
-                    let row = document.createElement("tr");
-
-                    let idCell = document.createElement("td");
-                    idCell.textContent = user.ID;
-
-                    let nameCell = document.createElement("td");
-                    nameCell.textContent = user.name;
-
-                    let branchCell = document.createElement("td");
-                    branchCell.textContent = user.branch;
-                    branchCell.setAttribute("data-branch-id", user.ID);
-
-                    let usernameCell = document.createElement("td");
-                    usernameCell.textContent = user.username;
-                    usernameCell.setAttribute("data-username-id", user.ID);
-
-                    let pinCell = document.createElement("td");
-                    pinCell.textContent = user.pin;
-                    pinCell.setAttribute("data-pin-id", user.ID);
-
-                    let actionCell = document.createElement("td");
-                    actionCell.style.textAlign = "center";
-
-                    let editBtn = document.createElement("button");
-                    editBtn.classList.add("action-btn", "approve-btn");
-                    editBtn.innerHTML = `<img src="admin_images/edit.png" alt="Edit" class="icon">`;
-                    editBtn.setAttribute("data-id", user.ID);
-                    editBtn.addEventListener("click", function () {
-                        editUser(this.getAttribute("data-id"));
-                    });
-
-                    let deleteBtn = document.createElement("button");
-                    deleteBtn.classList.add("action-btn", "decline-btn");
-                    deleteBtn.innerHTML = `<img src="admin_images/decline.png" alt="Decline" class="icon">`;
-                    deleteBtn.setAttribute("data-id", user.ID);
-                    deleteBtn.addEventListener("click", function () {
-                        deleteUser(this.getAttribute("data-id"));
-                    });
-
-                    let buttonContainer = document.createElement("div");
-                    buttonContainer.classList.add("action-buttons");
-                    buttonContainer.style.display = "flex";
-                    buttonContainer.style.gap = "5px";
-                    buttonContainer.appendChild(editBtn);
-                    buttonContainer.appendChild(deleteBtn);
-
-                    actionCell.appendChild(buttonContainer);
-
-                    row.appendChild(idCell);
-                    row.appendChild(nameCell);
-                    row.appendChild(branchCell);
-                    row.appendChild(usernameCell);
-                    row.appendChild(pinCell);
-                    row.appendChild(actionCell);
-
-                    tableBody.appendChild(row);
-                });
-            }
-
             // Edit user
             function editUser(userID) {
                 let usernameCell = document.querySelector(`td[data-username-id='${userID}']`);
@@ -266,6 +269,9 @@
 
                 let branchCell = document.querySelector(`td[data-branch-id='${userID}']`);
                 let currentBranch = branchCell.textContent;
+
+                let statusCell = document.querySelector(`td[data-status-id='${userID}']`);
+                let currentStatus = statusCell.textContent;
 
                 usernameCell.innerHTML = `<input type="text" value="${currentUsername}" id="editUsername-${userID}">`;
                 pinCell.innerHTML = `<input type="password" value="${currentPin}" id="editPin-${userID}">`;
@@ -290,6 +296,14 @@
                     })
                     .catch(error => console.error("Error fetching branches:", error));
 
+                    statusCell.innerHTML = `
+                    <select id="editStatus-${userID}">
+                        <option value="Active" ${currentStatus === "Active" ? "selected" : ""}>Active</option>
+                        <option value="Inactive" ${currentStatus === "Inactive" ? "selected" : ""}>Inactive</option>
+                    </select>
+                `;
+
+
                 let saveBtn = document.createElement("button");
                 saveBtn.classList.add("action-btn", "save-btn");
                 saveBtn.textContent = "Save";
@@ -307,11 +321,12 @@
                 let newUsername = document.getElementById(`editUsername-${userID}`).value;
                 let newPin = document.getElementById(`editPin-${userID}`).value;
                 let newBranch = document.getElementById(`editBranch-${userID}`).value;
+                let newStatus = document.getElementById(`editStatus-${userID}`).value;
 
                 fetch("4.1.update.php", {
                     method: "POST",
                     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: "id=" + encodeURIComponent(userID) + "&username=" + encodeURIComponent(newUsername) + "&pin=" + encodeURIComponent(newPin) + "&branch=" + encodeURIComponent(newBranch)
+                    body: `id=${encodeURIComponent(userID)}&username=${encodeURIComponent(newUsername)}&pin=${encodeURIComponent(newPin)}&branch=${encodeURIComponent(newBranch)}&status=${encodeURIComponent(newStatus)}`
                 })
                     .then(response => response.json())
                     .then(data => {
